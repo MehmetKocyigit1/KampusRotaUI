@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="KampusRotaUI.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:KampusRotaUI.Views"
+    Shell.FlyoutBehavior="Disabled">
+
+    <!-- Alt Sekme Çubuğu (TabBar) -->
+    <TabBar>
+        <!-- 1. Sekme: Mevcut İlanlar ve Arama -->
+        <Tab Title="Yolculuklar" Icon="ride_icon.png">
+            <ShellContent
+                Title="Yolculuklar"
+                ContentTemplate="{DataTemplate views:MainPage}"
+                Route="MainPage" />
+        </Tab>
+
+        <!-- 2. Sekme: Yeni İlan Verme Sayfası -->
+        <Tab Title="İlan Ver" Icon="add_icon.png">
+            <ShellContent
+                Title="İlan Ver"
+                ContentTemplate="{DataTemplate views:AddRidePage}"
+                Route="AddRidePage" />
+        </Tab>
+
+        <!-- 3. Sekme: Şifre Değiştirme -->
+        <Tab Title="Güvenlik" Icon="lock_icon.png">
+            <ShellContent
+                Title="Şifre Değiştir"
+                ContentTemplate="{DataTemplate views:ChangePasswordPage}"
+                Route="ChangePasswordPage" />
+        </Tab>
+
+        <!-- 4. Sekme: Profil (Opsiyonel - Gelecekte ekleyebiliriz) -->
+        <!-- Yanlış olan satır şuna benziyordur: -->
+        <!-- <ShellContent ContentTemplate="{DataTemplate views:MainPage}" Route="ProfilePage" /> -->
+
+        <!-- DOĞRU OLAN (Bununla Değiştir): -->
+        <Tab Title="Profil" Icon="user_icon.png">
+            <ShellContent
+            Title="Profilim"
+            ContentTemplate="{DataTemplate views:ProfilePage}" 
+            Route="ProfilePage" />
+        </Tab>
+    </TabBar>
+
+</Shell>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KampusRotaUI.Views.Login"
+             BackgroundColor="#F4F6F8"
+             Title="Giriş Yap">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="30" Padding="30,60,30,30">
+
+            <Label Text="🚗 KampüsRota" FontSize="36" FontAttributes="Bold" TextColor="#2C3E50" HorizontalOptions="Center" />
+            <Label Text="Yolculuğa Başlamak İçin Giriş Yap" FontSize="16" TextColor="#7F8C8D" HorizontalOptions="Center" />
+
+            <Frame HasShadow="True" CornerRadius="15" Padding="25" BackgroundColor="White" BorderColor="Transparent">
+                <VerticalStackLayout Spacing="15">
+
+                    <Border Stroke="#BDC3C7" StrokeThickness="1" BackgroundColor="#F8F9F9" Padding="10,0" >
+                        <!-- Kullanıcıyı .edu.tr konusunda yönlendiren küçük bir ipucu eklendi -->
+                        <Entry x:Name="EmailEntry" Placeholder="Üniversite E-postası (.edu.tr)" Keyboard="Email" TextColor="#2C3E50" />
+                    </Border>
+
+                    <Border Stroke="#BDC3C7" StrokeThickness="1" BackgroundColor="#F8F9F9" Padding="10,0" >
+                        <Entry x:Name="PasswordEntry" Placeholder="Şifre" IsPassword="True" TextColor="#2C3E50" />
+                    </Border>
+
+                    <Label x:Name="ErrorLabel" TextColor="#E74C3C" FontSize="12" IsVisible="False" />
+
+                    <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                        <CheckBox x:Name="RememberMeCheck" Color="#3498DB" />
+                        <Label Text="Beni Hatırla" VerticalOptions="Center" TextColor="#34495E" />
+                    </HorizontalStackLayout>
+
+                    <Button Text="Giriş Yap" BackgroundColor="#3498DB" TextColor="White" CornerRadius="10" FontAttributes="Bold" HeightRequest="50" Clicked="OnLoginClicked" />
+
+                </VerticalStackLayout>
+            </Frame>
+
+            <Button Text="Hesabın yok mu? Kayıt Ol" BackgroundColor="Transparent" TextColor="#2980B9" FontAttributes="Bold" Clicked="OnRegisterNavClicked" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

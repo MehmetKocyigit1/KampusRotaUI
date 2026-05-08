@@ -1,0 +1,59 @@
+# =========================
+# Visual Studio
+# =========================
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# =========================
+# Build çıktıları
+# =========================
+bin/
+obj/
+out/
+
+# =========================
+# .NET / NuGet
+# =========================
+*.nupkg
+packages/
+project.lock.json
+project.fragment.lock.json
+
+# =========================
+# MAUI / Android / iOS
+# =========================
+*.apk
+*.aab
+*.ipa
+*.xcarchive
+*.app
+*.dSYM
+
+# Android build
+android/
+*.dex
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# IDE
+# =========================
+.vscode/
+
+# =========================
+# Database / local files
+# =========================
+*.db
+*.sqlite
+
+# =========================
+# OS
+# =========================
+.DS_Store
+Thumbs.db

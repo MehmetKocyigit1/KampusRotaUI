@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KampusRotaUI.Views.RegisterPage"
+             BackgroundColor="#F4F6F8"
+             Title="Kayıt Ol">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="25" Padding="30,40,30,30">
+
+            <Label Text="Aramıza Katıl 🎓" FontSize="32" FontAttributes="Bold" TextColor="#2C3E50" HorizontalOptions="Center" />
+            <Label Text="Kampüs içi yolculuklara hemen başla" FontSize="14" TextColor="#7F8C8D" HorizontalOptions="Center" />
+
+            <Frame HasShadow="True" CornerRadius="15" Padding="25" BackgroundColor="White" BorderColor="Transparent">
+                <VerticalStackLayout Spacing="15">
+
+                    <!-- Ad ve Soyad (Yan Yana) -->
+                    <Grid ColumnDefinitions="*, *" ColumnSpacing="10">
+                        <Border Grid.Column="0" Stroke="#BDC3C7" StrokeThickness="1" BackgroundColor="#F8F9F9" Padding="10,0">
+                            <Entry x:Name="NameEntry" Placeholder="Adınız" TextColor="#2C3E50" />
+                        </Border>
+                        <Border Grid.Column="1" Stroke="#BDC3C7" StrokeThickness="1" BackgroundColor="#F8F9F9" Padding="10,0">
+                            <Entry x:Name="SurnameEntry" Placeholder="Soyadınız" TextColor="#2C3E50" />
+                        </Border>
+                    </Grid>
+
+                    <Border Stroke="#BDC3C7" StrokeThickness="1" BackgroundColor="#F8F9F9" Padding="10,0">
+                        <Entry x:Name="StudentNoEntry" Placeholder="Öğrenci Numarası (Opsiyonel)" Keyboard="Numeric" TextColor="#2C3E50" />
+                    </Border>
+
+                    <!-- Kadınlara Özel İlanlar için Cinsiyet -->
+                    <Border Stroke="#BDC3C7" StrokeThickness="1" BackgroundColor="#F8F9F9" Padding="10,0">
+                        <Picker x:Name="GenderPicker" Title="Cinsiyetiniz" TextColor="#2C3E50">
+                            <Picker.Items>
+                                <x:String>Kadın</x:String>
+                                <x:String>Erkek</x:String>
+                                <x:String>Belirtmek İstemiyorum</x:String>
+                            </Picker.Items>
+                        </Picker>
+                    </Border>
+
+                    <Border Stroke="#BDC3C7" StrokeThickness="1" BackgroundColor="#F8F9F9" Padding="10,0">
+                        <Entry x:Name="EmailEntry" Placeholder="Üniversite E-postası (.edu.tr)" Keyboard="Email" TextColor="#2C3E50" />
+                    </Border>
+
+                    <Border Stroke="#BDC3C7" StrokeThickness="1" BackgroundColor="#F8F9F9" Padding="10,0">
+                        <Entry x:Name="PasswordEntry" Placeholder="Şifre" IsPassword="True" TextColor="#2C3E50" />
+                    </Border>
+
+                    <Border Stroke="#BDC3C7" StrokeThickness="1" BackgroundColor="#F8F9F9" Padding="10,0">
+                        <Entry x:Name="ConfirmPasswordEntry" Placeholder="Şifre (Tekrar)" IsPassword="True" TextColor="#2C3E50" />
+                    </Border>
+
+                    <Button Text="Kayıt Ol" BackgroundColor="#2ECC71" TextColor="White" CornerRadius="10" FontAttributes="Bold" HeightRequest="50" Margin="0,10,0,0" Clicked="OnRegisterClicked" />
+
+                </VerticalStackLayout>
+            </Frame>
+
+            <Button Text="Zaten hesabın var mı? Giriş Yap" BackgroundColor="Transparent" TextColor="#3498DB" FontAttributes="Bold" Clicked="OnLoginNavClicked" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

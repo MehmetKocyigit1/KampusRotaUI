@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KampusRotaUI.Views.MainPage"
+             Title="Kampüs Rotaları"
+             BackgroundColor="#F0F2F5">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Çıkış Yap 🚪" Clicked="OnLogoutClicked" />
+    </ContentPage.ToolbarItems>
+
+    <Grid RowDefinitions="Auto, Auto, *">
+
+        <!-- 1. Üst Arama ve Filtreleme Alanı -->
+        <Frame Grid.Row="0" Margin="10" Padding="10" CornerRadius="15" HasShadow="True" BackgroundColor="White">
+            <Grid ColumnDefinitions="*, *, Auto" ColumnSpacing="8">
+                <Border Grid.Column="0" Stroke="#BDC3C7" StrokeThickness="1" StrokeShape="RoundRectangle 8">
+                    <Picker x:Name="StartPicker" Title="Kalkış" FontSize="12" TextColor="Black">
+                        <Picker.Items>
+                            <x:String>Iyaş</x:String>
+                            <x:String>Doğu Kampüsü</x:String>
+                            <x:String>Batı Kampüsü</x:String>
+                            <x:String>100. Yıl Yerleşkesi</x:String>
+                            <x:String>Erkek Yurdu</x:String>
+                            <x:String>MihriHatun Kız Yurdu</x:String>
+                            <x:String>Şehir Merkezi (Meydan)</x:String>
+                            <x:String>Otogar</x:String>
+                        </Picker.Items>
+                    </Picker>
+                </Border>
+
+                <Border Grid.Column="1" Stroke="#BDC3C7" StrokeThickness="1" StrokeShape="RoundRectangle 8">
+                    <DatePicker x:Name="RideDate" Format="dd/MM" FontSize="12" TextColor="Black" />
+                </Border>
+
+                <Button Grid.Column="2" Text="Ara" BackgroundColor="#2ECC71" TextColor="White" 
+                        FontAttributes="Bold" CornerRadius="10" Clicked="OnSearchClicked" 
+                        Padding="10,0" HeightRequest="40" />
+            </Grid>
+        </Frame>
+
+      
+
+        <!-- 3. Yolculuk Listesi -->
+        <ScrollView Grid.Row="2">
+            <VerticalStackLayout Padding="10" Spacing="10">
+                <Label Text="Mevcut Yolculuklar" FontAttributes="Bold" FontSize="18" Margin="5,0" TextColor="#2C3E50" />
+                <CollectionView x:Name="RidesCollection">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Frame Margin="0,5" Padding="15" CornerRadius="12" HasShadow="False" BorderColor="#DCDDE1" BackgroundColor="White">
+                                <Grid ColumnDefinitions="Auto, *, Auto">
+
+                                    <!-- İkon -->
+                                    <Label Grid.Column="0" Text="🚗" FontSize="24" VerticalOptions="Center" Margin="0,0,15,0" />
+
+                                    <!-- Orta Kısım: Rota, Tarih, Sürücü Adı -->
+                                    <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                        <!-- Yeni Model Binding: Rota -->
+                                        <Label Text="{Binding Rota}" FontAttributes="Bold" FontSize="16" TextColor="#2C3E50" />
+
+                                        <!-- Sürücü Adı -->
+                                        <Label Text="{Binding Surucu.TamAd, StringFormat='👤 {0}'}" FontSize="13" TextColor="#7F8C8D" />
+
+                                        <HorizontalStackLayout Spacing="5" Margin="0,2,0,0">
+                                            <!-- Yeni Model Binding: TarihFormatli -->
+                                            <Label Text="{Binding TarihFormatli}" FontSize="12" TextColor="Gray" VerticalOptions="Center" />
+
+                                            <!-- Kadınlara Özel Rozeti (Sadece SadeceKadinlarMi true ise görünür) -->
+                                            <Label Text="{Binding KadinaOzelMetni}" FontSize="12" TextColor="#9B59B6" FontAttributes="Bold" IsVisible="{Binding SadeceKadinlarMi}" VerticalOptions="Center"/>
+                                        </HorizontalStackLayout>
+                                    </VerticalStackLayout>
+
+                                    <!-- Sağ Kısım: Koltuk Sayısı ve Ücret -->
+                                    <VerticalStackLayout Grid.Column="2" VerticalOptions="Center" HorizontalOptions="End" Spacing="2">
+                                        <!-- Yeni Model Binding: BosKoltukSayisi -->
+                                        <Label Text="{Binding BosKoltukSayisi, StringFormat='{0} Koltuk'}" TextColor="#3498DB" VerticalOptions="Center" FontAttributes="Bold" HorizontalTextAlignment="End" />
+
+                                        <!-- Yeni Model Binding: UcretMetni -->
+                                        <Label Text="{Binding UcretMetni}" TextColor="#27AE60" FontSize="12" FontAttributes="Bold" HorizontalTextAlignment="End" />
+                                    </VerticalStackLayout>
+
+                                </Grid>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>
