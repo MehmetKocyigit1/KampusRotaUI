@@ -23,7 +23,7 @@ public partial class RegisterPage : ContentPage
         string email = EmailEntry.Text?.Trim();
         string sifre = PasswordEntry.Text;
         string sifreTekrar = ConfirmPasswordEntry.Text;
-        string cinsiyet = GenderPicker.SelectedItem?.ToString();
+        string cinsiyet = GetSelectedGender();
 
 
         try
@@ -97,5 +97,19 @@ public partial class RegisterPage : ContentPage
     private async void OnLoginNavClicked(object sender, EventArgs e)
     {
          await Navigation.PopAsync();
+    }
+
+    private string GetSelectedGender()
+    {
+        if (FemaleGenderRadio.IsChecked)
+            return "Kadın";
+
+        if (MaleGenderRadio.IsChecked)
+            return "Erkek";
+
+        if (UnspecifiedGenderRadio.IsChecked)
+            return "Belirtmek İstemiyorum";
+
+        return string.Empty;
     }
 }

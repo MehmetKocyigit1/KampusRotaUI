@@ -3,18 +3,23 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="KampusRotaUI.Views.AddRidePage"
              Title="Yeni Yolculuk İlanı"
-             BackgroundColor="#F4F6F8">
+             BackgroundColor="{StaticResource RideSurface}">
 
     <ScrollView>
-        <VerticalStackLayout Spacing="20" Padding="20">
+        <VerticalStackLayout Spacing="18" Padding="20,18,20,28">
 
-            <Frame HasShadow="True" CornerRadius="15" Padding="20" BorderColor="Transparent">
-                <VerticalStackLayout Spacing="15">
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Yolculuk yayınla" FontAttributes="Bold" FontSize="28" TextColor="{StaticResource Tertiary}" />
+                <Label Text="Güzergahı ve koltuk detaylarını net yaz, doğru yolcular seni bulsun." FontSize="13" TextColor="{StaticResource RideMuted}" />
+            </VerticalStackLayout>
 
-                    <Label Text="Rota Bilgileri" FontAttributes="Bold" FontSize="18" TextColor="#2C3E50"/>
+            <Border Padding="20" BackgroundColor="{StaticResource White}" Stroke="{StaticResource RideLine}" StrokeThickness="1" StrokeShape="RoundRectangle 20">
+                <VerticalStackLayout Spacing="16">
 
-                    <Border Stroke="#BDC3C7" StrokeThickness="1" BackgroundColor="#F8F9F9">
-                        <Picker x:Name="DeparturePicker" Title="Kalkış Noktası Seçin" Margin="10,0" TitleColor="Gray" TextColor="Black">
+                    <Label Text="Rota bilgileri" FontAttributes="Bold" FontSize="18" TextColor="{StaticResource Tertiary}"/>
+
+                    <Border Stroke="{StaticResource RideLine}" StrokeThickness="1" StrokeShape="RoundRectangle 12" BackgroundColor="#FBFEFE" Padding="12,0">
+                        <Picker x:Name="DeparturePicker" Title="Kalkış noktası seçin" TitleColor="{StaticResource RideMuted}" TextColor="{StaticResource Tertiary}">
                             <Picker.Items>
                                 <x:String>Iyaş</x:String>
                                 <x:String>Doğu Kampüsü</x:String>
@@ -25,8 +30,8 @@
                         </Picker>
                     </Border>
 
-                    <Border Stroke="#BDC3C7" StrokeThickness="1" BackgroundColor="#F8F9F9">
-                        <Picker x:Name="DestinationPicker" Title="Varış Noktası Seçin" Margin="10,0" TitleColor="Gray" TextColor="Black">
+                    <Border Stroke="{StaticResource RideLine}" StrokeThickness="1" StrokeShape="RoundRectangle 12" BackgroundColor="#FBFEFE" Padding="12,0">
+                        <Picker x:Name="DestinationPicker" Title="Varış noktası seçin" TitleColor="{StaticResource RideMuted}" TextColor="{StaticResource Tertiary}">
                             <Picker.Items>
                                 <x:String>Batı Kampüsü</x:String>
                                 <x:String>Doğu Kampüsü</x:String>
@@ -36,56 +41,56 @@
                         </Picker>
                     </Border>
 
-                    <Label Text="Zaman &amp; Detaylar" FontAttributes="Bold" FontSize="18" TextColor="#2C3E50" Margin="0,10,0,0" />
+                    <Label Text="Zaman ve detaylar" FontAttributes="Bold" FontSize="18" TextColor="{StaticResource Tertiary}" Margin="0,10,0,0" />
 
                     <Grid RowDefinitions="Auto, Auto" ColumnDefinitions="*, *" ColumnSpacing="10" RowSpacing="5">
-                        <Label Grid.Row="0" Grid.Column="0" Text="Tarih" FontAttributes="Bold" FontSize="14" TextColor="#2C3E50" />
-                        <Label Grid.Row="0" Grid.Column="1" Text="Saat" FontAttributes="Bold" FontSize="14" TextColor="#2C3E50" />
+                        <Label Grid.Row="0" Grid.Column="0" Text="Tarih" FontAttributes="Bold" FontSize="13" TextColor="{StaticResource RideMuted}" />
+                        <Label Grid.Row="0" Grid.Column="1" Text="Saat" FontAttributes="Bold" FontSize="13" TextColor="{StaticResource RideMuted}" />
 
-                        <Border Grid.Row="1" Grid.Column="0" Stroke="#BDC3C7" StrokeThickness="1" BackgroundColor="#F8F9F9">
-                            <DatePicker x:Name="RideDatePicker" Format="dd/MM/yyyy" TextColor="#2C3E50" Margin="10,0" HeightRequest="45"/>
+                        <Border Grid.Row="1" Grid.Column="0" Stroke="{StaticResource RideLine}" StrokeThickness="1" StrokeShape="RoundRectangle 12" BackgroundColor="#FBFEFE" Padding="12,0">
+                            <DatePicker x:Name="RideDatePicker" Format="dd/MM/yyyy" TextColor="{StaticResource Tertiary}" HeightRequest="45"/>
                         </Border>
 
-                        <Border Grid.Row="1" Grid.Column="1" Stroke="#BDC3C7" StrokeThickness="1" BackgroundColor="#F8F9F9">
-                            <TimePicker x:Name="RideTimePicker" Format="HH:mm" TextColor="#2C3E50" Margin="10,0" HeightRequest="45"/>
+                        <Border Grid.Row="1" Grid.Column="1" Stroke="{StaticResource RideLine}" StrokeThickness="1" StrokeShape="RoundRectangle 12" BackgroundColor="#FBFEFE" Padding="12,0">
+                            <TimePicker x:Name="RideTimePicker" Format="HH:mm" TextColor="{StaticResource Tertiary}" HeightRequest="45"/>
                         </Border>
                     </Grid>
 
                     <!-- Koltuk ve Ücret (Yan Yana Grid Tasarımı) -->
                     <Grid RowDefinitions="Auto" ColumnDefinitions="*, *" ColumnSpacing="10" Margin="0,5,0,0">
-                        <Border Grid.Column="0" Stroke="#BDC3C7" StrokeThickness="1" BackgroundColor="#F8F9F9">
-                            <Entry x:Name="SeatsEntry" Placeholder="Koltuk Sayısı" Keyboard="Numeric" Margin="10,0" TextColor="Black" />
+                        <Border Grid.Column="0" Stroke="{StaticResource RideLine}" StrokeThickness="1" StrokeShape="RoundRectangle 12" BackgroundColor="#FBFEFE" Padding="12,0">
+                            <Entry x:Name="SeatsEntry" Placeholder="Koltuk sayısı" Keyboard="Numeric" TextColor="{StaticResource Tertiary}" />
                         </Border>
 
-                        <Border Grid.Column="1" Stroke="#BDC3C7" StrokeThickness="1" BackgroundColor="#F8F9F9">
-                            <Entry x:Name="PriceEntry" Placeholder="Ücret (₺) (Opsiyonel)" Keyboard="Numeric" Margin="10,0" TextColor="Black" />
+                        <Border Grid.Column="1" Stroke="{StaticResource RideLine}" StrokeThickness="1" StrokeShape="RoundRectangle 12" BackgroundColor="#FBFEFE" Padding="12,0">
+                            <Entry x:Name="PriceEntry" Placeholder="Ücret (opsiyonel)" Keyboard="Numeric" TextColor="{StaticResource Tertiary}" />
                         </Border>
                     </Grid>
 
                     <!-- Açıklama Alanı (Editor ile çok satırlı giriş) -->
-                    <Border Stroke="#BDC3C7" StrokeThickness="1" BackgroundColor="#F8F9F9" Margin="0,5,0,0">
-                        <Editor x:Name="DescriptionEditor" Placeholder="Açıklama (Örn: Sadece sabahçı grubu, bagaj boş...)" HeightRequest="80" Margin="10,0" TextColor="Black" />
+                    <Border Stroke="{StaticResource RideLine}" StrokeThickness="1" StrokeShape="RoundRectangle 12" BackgroundColor="#FBFEFE" Margin="0,5,0,0" Padding="12,6">
+                        <Editor x:Name="DescriptionEditor" Placeholder="Açıklama: buluşma noktası, bagaj, notlar..." HeightRequest="82" TextColor="{StaticResource Tertiary}" />
                     </Border>
 
                     <!-- Kadınlara Özel Filtresi -->
                     <HorizontalStackLayout Spacing="10" Margin="0,5,0,0">
-                        <CheckBox x:Name="WomenOnlyCheckBox" Color="#9B59B6" />
-                        <Label Text="👩 Sadece Kadınlar" VerticalOptions="Center" FontSize="14" TextColor="#2C3E50" FontAttributes="Bold"/>
+                        <CheckBox x:Name="WomenOnlyCheckBox" Color="#7B3FA0" />
+                        <Label Text="Sadece kadınlar" VerticalOptions="Center" FontSize="14" TextColor="{StaticResource Tertiary}" FontAttributes="Bold"/>
                     </HorizontalStackLayout>
 
                     <!-- Araya ince bir çizgi (Ayırıcı) -->
-                    <BoxView HeightRequest="1" Color="#E5E7E9" Margin="0,10" />
+                    <BoxView HeightRequest="1" Color="{StaticResource RideLine}" Margin="0,10" />
 
                     <!-- Kurallar -->
                     <HorizontalStackLayout Spacing="10">
-                        <CheckBox x:Name="TermsCheckBox" Color="#3498DB" />
-                        <Label Text="Kampüs kurallarına uymayı kabul ediyorum." VerticalOptions="Center" FontSize="12" TextColor="#7F8C8D"/>
+                        <CheckBox x:Name="TermsCheckBox" Color="{StaticResource Primary}" />
+                        <Label Text="Kampüs kurallarına uymayı kabul ediyorum." VerticalOptions="Center" FontSize="12" TextColor="{StaticResource RideMuted}"/>
                     </HorizontalStackLayout>
 
-                    <Button Text="İlanı Yayınla" Clicked="OnPublishClicked" BackgroundColor="#2ECC71" TextColor="White" FontAttributes="Bold" CornerRadius="10" HeightRequest="50" Margin="0,10,0,0" />
+                    <Button Text="İlanı yayınla" Clicked="OnPublishClicked" BackgroundColor="{StaticResource Primary}" TextColor="{StaticResource White}" FontAttributes="Bold" CornerRadius="24" HeightRequest="50" Margin="0,10,0,0" />
 
                 </VerticalStackLayout>
-            </Frame>
+            </Border>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

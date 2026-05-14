@@ -2,40 +2,45 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="KampusRotaUI.Views.Login"
-             BackgroundColor="#F4F6F8"
+             BackgroundColor="{StaticResource RideSurface}"
              Title="Giriş Yap">
 
     <ScrollView>
-        <VerticalStackLayout Spacing="30" Padding="30,60,30,30">
+        <VerticalStackLayout Spacing="22" Padding="28,56,28,30">
 
-            <Label Text="🚗 KampüsRota" FontSize="36" FontAttributes="Bold" TextColor="#2C3E50" HorizontalOptions="Center" />
-            <Label Text="Yolculuğa Başlamak İçin Giriş Yap" FontSize="16" TextColor="#7F8C8D" HorizontalOptions="Center" />
+            <VerticalStackLayout Spacing="6">
+                <Label Text="KampüsRota" FontSize="36" FontAttributes="Bold" TextColor="{StaticResource Tertiary}" HorizontalOptions="Center" />
+                <Label Text="Güvenli kampüs yolculuklarına devam et." FontSize="15" TextColor="{StaticResource RideMuted}" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
 
-            <Frame HasShadow="True" CornerRadius="15" Padding="25" BackgroundColor="White" BorderColor="Transparent">
-                <VerticalStackLayout Spacing="15">
+            <Border Padding="22"
+                    BackgroundColor="{StaticResource White}"
+                    Stroke="{StaticResource RideLine}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 20">
+                <VerticalStackLayout Spacing="16">
 
-                    <Border Stroke="#BDC3C7" StrokeThickness="1" BackgroundColor="#F8F9F9" Padding="10,0" >
-                        <!-- Kullanıcıyı .edu.tr konusunda yönlendiren küçük bir ipucu eklendi -->
-                        <Entry x:Name="EmailEntry" Placeholder="Üniversite E-postası (.edu.tr)" Keyboard="Email" TextColor="#2C3E50" />
+                    <Border Stroke="{StaticResource RideLine}" StrokeThickness="1" StrokeShape="RoundRectangle 12" BackgroundColor="#FBFEFE" Padding="12,0" >
+                        <Entry x:Name="EmailEntry" Placeholder="Üniversite e-postası (.edu.tr)" Keyboard="Email" TextColor="{StaticResource Tertiary}" />
                     </Border>
 
-                    <Border Stroke="#BDC3C7" StrokeThickness="1" BackgroundColor="#F8F9F9" Padding="10,0" >
-                        <Entry x:Name="PasswordEntry" Placeholder="Şifre" IsPassword="True" TextColor="#2C3E50" />
+                    <Border Stroke="{StaticResource RideLine}" StrokeThickness="1" StrokeShape="RoundRectangle 12" BackgroundColor="#FBFEFE" Padding="12,0" >
+                        <Entry x:Name="PasswordEntry" Placeholder="Şifre" IsPassword="True" TextColor="{StaticResource Tertiary}" />
                     </Border>
 
-                    <Label x:Name="ErrorLabel" TextColor="#E74C3C" FontSize="12" IsVisible="False" />
+                    <Label x:Name="ErrorLabel" TextColor="#D93025" FontSize="12" IsVisible="False" />
 
                     <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
-                        <CheckBox x:Name="RememberMeCheck" Color="#3498DB" />
-                        <Label Text="Beni Hatırla" VerticalOptions="Center" TextColor="#34495E" />
+                        <CheckBox x:Name="RememberMeCheck" Color="{StaticResource Primary}" />
+                        <Label Text="Beni hatırla" VerticalOptions="Center" TextColor="{StaticResource Tertiary}" />
                     </HorizontalStackLayout>
 
-                    <Button Text="Giriş Yap" BackgroundColor="#3498DB" TextColor="White" CornerRadius="10" FontAttributes="Bold" HeightRequest="50" Clicked="OnLoginClicked" />
+                    <Button Text="Giriş yap" BackgroundColor="{StaticResource Primary}" TextColor="{StaticResource White}" CornerRadius="24" FontAttributes="Bold" HeightRequest="50" Clicked="OnLoginClicked" />
 
                 </VerticalStackLayout>
-            </Frame>
+            </Border>
 
-            <Button Text="Hesabın yok mu? Kayıt Ol" BackgroundColor="Transparent" TextColor="#2980B9" FontAttributes="Bold" Clicked="OnRegisterNavClicked" />
+            <Button Text="Hesabın yok mu? Kayıt ol" BackgroundColor="Transparent" TextColor="{StaticResource Primary}" FontAttributes="Bold" Clicked="OnRegisterNavClicked" />
 
         </VerticalStackLayout>
     </ScrollView>

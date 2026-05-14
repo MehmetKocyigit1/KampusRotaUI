@@ -4,7 +4,14 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:views="clr-namespace:KampusRotaUI.Views"
-    Shell.FlyoutBehavior="Disabled">
+    Shell.FlyoutBehavior="Disabled"
+    Shell.BackgroundColor="{StaticResource White}"
+    Shell.ForegroundColor="{StaticResource Tertiary}"
+    Shell.TitleColor="{StaticResource Tertiary}"
+    Shell.TabBarBackgroundColor="{StaticResource White}"
+    Shell.TabBarForegroundColor="{StaticResource Primary}"
+    Shell.TabBarTitleColor="{StaticResource Primary}"
+    Shell.TabBarUnselectedColor="{StaticResource RideMuted}">
 
     <!-- Alt Sekme Çubuğu (TabBar) -->
     <TabBar>
