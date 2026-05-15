@@ -31,7 +31,7 @@ public partial class Login : ContentPage
             }
 
             // API'ye gidiyoruz
-            var kullanici = await _apiService.GirisYapAsync(email, sifre);
+            var kullanici = await _apiService.LoginAsync(email, sifre);
 
             // KRİTİK KONTROL: Eğer API'den null döndüyse (Kullanıcı bulunamadıysa)
             if (kullanici == null)
@@ -48,6 +48,7 @@ public partial class Login : ContentPage
             Preferences.Default.Set("UserId", userId);
             Preferences.Default.Set("UserFullName", tamAd);
             Preferences.Default.Set("UserEmail", userEmail);
+            Preferences.Default.Set("UserGender", kullanici.Cinsiyet);
 
             Debug.WriteLine($"GİRİŞ BAŞARILI: {tamAd}");
 

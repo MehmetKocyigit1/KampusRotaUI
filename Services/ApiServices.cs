@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
 using KampusRotaUI.Models;
 
 namespace KampusRotaUI.Services;
@@ -8,17 +10,14 @@ public class ApiServices
 {
     private readonly HttpClient _httpClient;
 
-     private string GetBaseUrl()
+    private readonly string _openRouterKey = "Akif attım sana wp den";
+    private readonly string _openRouterUrl = "https://openrouter.ai/api/v1/chat/completions";
+
+    private string GetBaseUrl()
     {
+        // Android emülatörün localhost'a erişebilmesi için 10.0.2.2 kullanıyoruz
         if (DeviceInfo.Platform == DevicePlatform.Android)
-        {
-             return "https://10.0.2.2:7107/";
-        }
-        else if (DeviceInfo.Platform == DevicePlatform.WinUI)
-        {
-            // Windows (PC) direkt localhost kullanır
-            return "https://localhost:7107/";
-        }
+            return "https://10.0.2.2:7107/";
 
         return "https://localhost:7107/";
     }
@@ -26,7 +25,7 @@ public class ApiServices
     public ApiServices()
     {
         var handler = new HttpClientHandler();
-        // Geliştirme (Dev) ortamında SSL sertifika hatalarını yok saymak için
+        // Geliştirme aşamasında SSL sertifika hatalarını görmezden geliyoruz
         handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
 
         _httpClient = new HttpClient(handler)
@@ -35,9 +34,72 @@ public class ApiServices
         };
     }
 
-    // --- 1. KULLANICI İŞLEMLERİ ---
+    // --- ANTIGRAVITY (OpenRouter) METODU ---
+    // Bu metot AGENT.md dosyasını okur ve Gemini'ye gönderir
+    public async Task<string> AskGeminiAsync(string userPrompt)
+    {
+        try
+        {
+            // 1. AGENT.md dosyasını uygulama paketinden okuyoruz
+            string agentInstructions = "";
+            try
+            {
+                using var stream = await FileSystem.OpenAppPackageFileAsync("AGENT.md");
+                using var reader = new StreamReader(stream);
+                agentInstructions = await reader.ReadToEndAsync();
+            }
+            catch
+            {
+                agentInstructions = "Sen KampusRota uygulamasının asistanı Antigravity'sin.";
+            }
 
-    public async Task<Kullanici?> GirisYapAsync(string email, string sifre)
+            // 2. OpenRouter için JSON gövdesini (Payload) hazırlıyoruz
+            var requestBody = new
+            {
+                model = "google/gemini-2.0-flash-001",
+                messages = new[]
+                {
+                    new { role = "system", content = agentInstructions },
+                    new { role = "user", content = userPrompt }
+                }
+            };
+
+            // 3. HTTP İsteğini manuel oluşturuyoruz (Flutter mantığı ile aynı)
+            using var request = new HttpRequestMessage(HttpMethod.Post, _openRouterUrl);
+            request.Headers.Add("Authorization", $"Bearer {_openRouterKey}");
+            request.Headers.Add("HTTP-Referer", "https://kampusrota.com"); // OpenRouter için tavsiye edilir
+
+            var jsonPayload = JsonSerializer.Serialize(requestBody);
+            request.Content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+            // 4. İsteği gönderiyoruz
+            var response = await _httpClient.SendAsync(request);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(responseContent);
+            if (response.IsSuccessStatusCode)
+            {
+                
+
+                // OpenRouter JSON yapısından asıl cevabı çekiyoruz: choices[0].message.content
+                return doc.RootElement
+                    .GetProperty("choices")[0]
+                    .GetProperty("message")
+                    .GetProperty("content")
+                    .GetString() ?? "Cevap boş döndü.";
+            }
+
+            return $"OPENROUTER HATASI: {response.StatusCode} - {responseContent}";
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine("ANTIGRAVITY HATA: " + ex.Message);
+            return "Şu an cevap veremiyorum, lütfen internet bağlantınızı kontrol edin.";
+        }
+    }
+
+    // --- 1. KULLANICI İŞLEMLERİ (Backend API) ---
+
+    public async Task<Kullanici?> LoginAsync(string email, string sifre)
     {
         try
         {
@@ -46,25 +108,13 @@ public class ApiServices
 
             if (response.IsSuccessStatusCode)
             {
-                // Veriyi oku
-                var kullanici = await response.Content.ReadFromJsonAsync<Kullanici>();
-
-                // DİKKAT: Eğer JSON içinde Ad/Soyad gibi alanlar eksik geliyorsa 
-                // ve biz bunlara UI tarafında erişiyorsak o meşhur null hatasını alırız.
-                if (kullanici != null)
-                {
-                    // TamAd özelliği null ise hata vermemesi için kontrol ekliyoruz
-                    Debug.WriteLine("Giriş Başarılı: " + (kullanici.TamAd ?? "İsimsiz Kullanıcı"));
-                    return kullanici;
-                }
+                return await response.Content.ReadFromJsonAsync<Kullanici>();
             }
-
-            Debug.WriteLine("Giriş başarısız: " + response.StatusCode);
             return null;
         }
         catch (Exception ex)
         {
-            Debug.WriteLine("BAĞLANTI HATASI: " + ex.Message);
+            Debug.WriteLine("GİRİŞ HATASI: " + ex.Message);
             return null;
         }
     }
@@ -73,22 +123,16 @@ public class ApiServices
     {
         try
         {
-            System.Diagnostics.Debug.WriteLine("=== KAYIT İŞLEMİ BAŞLADI ===");
-
-            // Program.cs'deki Register ucuna (endpoint) istek atıyoruz
             var response = await _httpClient.PostAsJsonAsync("api/users/register", yeniKullanici);
-
             if (response.IsSuccessStatusCode)
             {
-                var olusturulanKullanici = await response.Content.ReadFromJsonAsync<Kullanici>();
-                return olusturulanKullanici;
+                return await response.Content.ReadFromJsonAsync<Kullanici>();
             }
-
             return null;
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine("KAYIT HATA: " + ex.Message);
+            Debug.WriteLine("KAYIT HATASI: " + ex.Message);
             return null;
         }
     }
@@ -97,24 +141,16 @@ public class ApiServices
     {
         try
         {
-            Debug.WriteLine($"=== ŞİFRE DEĞİŞTİRME BAŞLADI (Kullanıcı ID: {kullaniciId}) ===");
-
-            // Program.cs'deki MapPut ucuna uygun URL
             var url = $"api/users/{kullaniciId}/change-password";
-
-            // SifreDegistirmeIstegi modeli Body (Gövde) olarak gönderiliyor
             var response = await _httpClient.PutAsJsonAsync(url, istek);
-
             return response.IsSuccessStatusCode;
         }
         catch (Exception ex)
         {
-            Debug.WriteLine("ŞİFRE DEĞİŞTİRME HATA: " + ex.Message);
+            Debug.WriteLine("ŞİFRE GÜNCELLEME HATASI: " + ex.Message);
             return false;
         }
     }
-
-
 
     // --- 2. YOLCULUK İŞLEMLERİ ---
 
@@ -122,19 +158,13 @@ public class ApiServices
     {
         try
         {
-            Debug.WriteLine("=== YOLCULUK EKLENİYOR ===");
-
-            // Program.cs'deki uç nokta: /api/rides?kullaniciId={id}
             var url = $"api/rides?kullaniciId={kullaniciId}";
-
             var response = await _httpClient.PostAsJsonAsync(url, yeniYolculuk);
-
-            Debug.WriteLine("YOLCULUK EKLEME STATUS: " + response.StatusCode);
             return response.IsSuccessStatusCode;
         }
         catch (Exception ex)
         {
-            Debug.WriteLine("YOLCULUK EKLEME HATA: " + ex.Message);
+            Debug.WriteLine("YOLCULUK EKLEME HATASI: " + ex.Message);
             return false;
         }
     }
@@ -143,12 +173,11 @@ public class ApiServices
     {
         try
         {
-            // Ana sayfada (MainPage) tüm aktif ilanları listelemek için kullanılacak
             return await _httpClient.GetFromJsonAsync<List<Yolculuk>>("api/rides") ?? new List<Yolculuk>();
         }
         catch (Exception ex)
         {
-            Debug.WriteLine("YOLCULUKLARI GETİRME HATA: " + ex.Message);
+            Debug.WriteLine("VERİ ÇEKME HATASI: " + ex.Message);
             return new List<Yolculuk>();
         }
     }
@@ -157,15 +186,13 @@ public class ApiServices
     {
         try
         {
-            // Kullanıcının kendi ilanını iptal etmesi/silmesi (Soft Delete) için eklendi
             var url = $"api/rides/{yolculukId}?silenKullaniciId={silenKullaniciId}";
             var response = await _httpClient.DeleteAsync(url);
-
             return response.IsSuccessStatusCode;
         }
         catch (Exception ex)
         {
-            Debug.WriteLine("YOLCULUK SİLME HATA: " + ex.Message);
+            Debug.WriteLine("SİLME HATASI: " + ex.Message);
             return false;
         }
     }

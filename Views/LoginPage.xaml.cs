@@ -33,7 +33,7 @@ public partial class LoginPage : ContentPage
             if (user != null)
             {
                 Preferences.Default.Set("UserId", user.Id);
-                Preferences.Default.Set("UserName", user.FirstName);
+                Preferences.Default.Set("UserName", user.Ad);
 
                 MainThread.BeginInvokeOnMainThread(() =>
                 {

@@ -3,73 +3,135 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="KampusRotaUI.Views.ProfilePage"
              Title="Profilim"
-             BackgroundColor="{StaticResource RideSurface}">
+             BackgroundColor="#F4F6F8">
 
     <ScrollView>
-        <VerticalStackLayout Spacing="20" Padding="26,28,26,30" VerticalOptions="Start">
+        <VerticalStackLayout Spacing="25" Padding="30" VerticalOptions="Start">
 
-            <Border Padding="24"
-                    BackgroundColor="{StaticResource White}"
-                    Stroke="{StaticResource RideLine}"
-                    StrokeThickness="1"
-                    StrokeShape="RoundRectangle 20">
-                <VerticalStackLayout Spacing="14" HorizontalOptions="Center">
-                    <Border HeightRequest="92"
-                            WidthRequest="92"
-                            HorizontalOptions="Center"
-                            Stroke="{StaticResource Secondary}"
-                            StrokeThickness="6"
-                            StrokeShape="RoundRectangle 46"
-                            BackgroundColor="{StaticResource Secondary}">
-                        <Label Text="KR" FontSize="28" FontAttributes="Bold" TextColor="{StaticResource Primary}" HorizontalOptions="Center" VerticalOptions="Center" />
-                    </Border>
+            <!-- Profil Fotoğrafı Alanı -->
+            <!-- Profesyonel ve Taşmayan Yuvarlak Tasarım -->
+            <Border Stroke="#3498DB"
+                StrokeThickness="2"
+                HeightRequest="120"
+                WidthRequest="120"
+                HorizontalOptions="Center"
+                VerticalOptions="Center">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="60" />
+                </Border.StrokeShape>
 
+                <Grid>
+                    <Image x:Name="ProfileImage" 
+                       Source="insta_male.png" 
+                       Aspect="AspectFill" 
+                       HeightRequest="120" 
+                       WidthRequest="120" 
+                       BackgroundColor="#F0F3F4">
+               
+                    </Image>
+
+                    <!-- Tıklama alanının tüm fotoğrafı kaplaması için Fill eklendi -->
+                    <ImageButton Clicked="OnAddPhotoClicked"
+                         BackgroundColor="Transparent"
+                         HorizontalOptions="Fill"
+                         VerticalOptions="Fill" />
+                </Grid>
+            </Border>
+            
+            
+            
+            <!-- Kullanıcı Bilgileri Kartı -->
+            <Frame HasShadow="True" CornerRadius="15" Padding="20" BackgroundColor="White" BorderColor="Transparent">
+                <VerticalStackLayout Spacing="10" HorizontalOptions="Center">
                     <Label x:Name="NameLabel" 
-                           FontSize="23" 
+                           FontSize="22" 
                            FontAttributes="Bold" 
-                           TextColor="{StaticResource Tertiary}" 
+                           TextColor="#2C3E50" 
                            HorizontalOptions="Center" />
 
                     <Label x:Name="EmailLabel" 
-                           FontSize="14" 
-                           TextColor="{StaticResource RideMuted}" 
+                           FontSize="16" 
+                           TextColor="#7F8C8D" 
                            HorizontalOptions="Center" />
 
-                    <BoxView HeightRequest="1" Color="{StaticResource RideLine}" Margin="0,8" />
+                    <BoxView HeightRequest="1" Color="#DCDDE1" Margin="0,10" />
 
                     <Label Text="Üniversite Doğrulanmış Hesap" 
-                           TextColor="{StaticResource RideSuccess}" 
+                           TextColor="#27AE60" 
                            FontSize="12" 
                            FontAttributes="Bold" 
                            HorizontalOptions="Center"/>
                 </VerticalStackLayout>
-            </Border>
+            </Frame>
 
             <!-- İstatistik veya Ekstra Bilgi (Opsiyonel) -->
             <Grid ColumnDefinitions="*, *" ColumnSpacing="15">
-                <Border Grid.Column="0" Padding="16" Stroke="{StaticResource RideLine}" StrokeShape="RoundRectangle 16" BackgroundColor="{StaticResource White}">
+                <Frame Grid.Column="0" HasShadow="False" CornerRadius="10" BackgroundColor="#EBF5FB">
                     <VerticalStackLayout HorizontalOptions="Center">
-                        <Label Text="Yolculuklar" FontSize="12" TextColor="{StaticResource RideMuted}" HorizontalOptions="Center"/>
-                        <Label Text="0" FontAttributes="Bold" FontSize="20" TextColor="{StaticResource Tertiary}" HorizontalOptions="Center"/>
+                        <Label Text="Yolculuklar" FontSize="12" TextColor="#3498DB" HorizontalOptions="Center"/>
+                        <Label Text="0" FontAttributes="Bold" FontSize="18" TextColor="#2C3E50" HorizontalOptions="Center"/>
                     </VerticalStackLayout>
-                </Border>
-                <Border Grid.Column="1" Padding="16" Stroke="{StaticResource RideLine}" StrokeShape="RoundRectangle 16" BackgroundColor="{StaticResource White}">
+                </Frame>
+                <Frame Grid.Column="1" HasShadow="False" CornerRadius="10" BackgroundColor="#EBF5FB">
                     <VerticalStackLayout HorizontalOptions="Center">
-                        <Label Text="Puanım" FontSize="12" TextColor="{StaticResource RideMuted}" HorizontalOptions="Center"/>
-                        <Label Text="5.0" FontAttributes="Bold" FontSize="20" TextColor="{StaticResource Tertiary}" HorizontalOptions="Center"/>
+                        <Label Text="Puanım" FontSize="12" TextColor="#3498DB" HorizontalOptions="Center"/>
+                        <Label Text="5.0" FontAttributes="Bold" FontSize="18" TextColor="#2C3E50" HorizontalOptions="Center"/>
                     </VerticalStackLayout>
-                </Border>
+                </Frame>
             </Grid>
 
             <!-- Çıkış Butonu -->
-            <Button Text="Güvenli çıkış yap" 
+            <Button Text="Güvenli Çıkış Yap" 
                     Clicked="OnLogoutClicked" 
-                    BackgroundColor="#D93025" 
+                    BackgroundColor="#E74C3C" 
                     TextColor="White" 
                     FontAttributes="Bold"
-                    CornerRadius="24" 
+                    CornerRadius="10" 
                     HeightRequest="50" 
                     Margin="0,20,0,0" />
+
+
+            <Frame BackgroundColor="#F0F4FF" 
+               CornerRadius="15" 
+               HasShadow="True" 
+               Margin="20" 
+               BorderColor="#512BD4">
+
+                <VerticalStackLayout Spacing="10" Padding="10">
+                    <Label Text="🚀 Antigravity Asistan" 
+               TextColor="#512BD4" 
+               FontAttributes="Bold" 
+               FontSize="18" 
+               HorizontalOptions="Center"/>
+
+                    <Editor x:Name="GeminiEntry" 
+                Placeholder="KampusRota hakkında bir şey sor..." 
+                AutoSize="TextChanges" 
+                HeightRequest="80"
+                BackgroundColor="White"
+                TextColor="Black"/>
+
+                    <Button Text="Asistana Sor" 
+                Clicked="OnGeminiAskClicked" 
+                BackgroundColor="#512BD4" 
+                TextColor="White" 
+                CornerRadius="10" 
+                HeightRequest="45"/>
+
+                    <ActivityIndicator x:Name="LoadingIndicator" 
+                           IsRunning="False" 
+                           Color="#512BD4" 
+                           HorizontalOptions="Center"/>
+
+                    <Label x:Name="GeminiResponseLabel" 
+               Text="Cevap bekliyorum..." 
+               TextColor="#333" 
+               FontSize="14" 
+               LineBreakMode="WordWrap" 
+               Padding="5"/>
+                </VerticalStackLayout>
+            </Frame>
+
 
         </VerticalStackLayout>
     </ScrollView>
