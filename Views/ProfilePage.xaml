@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KampusRotaUI.Views.ProfilePage"
+             Title="Profilim"
+             NavigationPage.HasNavigationBar="False"
+             Background="{StaticResource AppBackgroundBrush}">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="20" Padding="20" VerticalOptions="Start">
+
+            <!-- Header -->
+            <VerticalStackLayout Spacing="6" HorizontalOptions="Center">
+                <Label Text="Hesabım" FontSize="20" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center" />
+                <Label Text="Profilinizi yönetin ve yeni yolculuklar oluşturun" FontSize="13" TextColor="#E6F0FF" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
+
+            <!-- Avatar -->
+            <Border HorizontalOptions="Center" Stroke="White" StrokeThickness="3" StrokeShape="RoundRectangle 80" HeightRequest="128" WidthRequest="128" BackgroundColor="Transparent">
+                <Image x:Name="ProfileImage" Source="insta_male.png" Aspect="AspectFill" HeightRequest="120" WidthRequest="120" />
+            </Border>
+
+            <!-- Main white card -->
+            <Frame CornerRadius="16" HasShadow="True" Padding="18" BackgroundColor="White" Margin="10,0" VerticalOptions="Start">
+                <VerticalStackLayout Spacing="12">
+                    <VerticalStackLayout Spacing="4" HorizontalOptions="Center">
+                        <Label x:Name="NameLabel" TextColor="#111" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center" />
+                        <Label x:Name="EmailLabel" TextColor="#666" FontSize="14" HorizontalOptions="Center" />
+                        <Label x:Name="BioLabel" TextColor="#444" FontSize="13" HorizontalOptions="Center" HorizontalTextAlignment="Center" LineBreakMode="WordWrap" MaxLines="3" IsVisible="False" />
+                    </VerticalStackLayout>
+
+                    <!-- Stats -->
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12" Margin="0,6,0,0">
+                        <Border BackgroundColor="#FBFEFE" StrokeShape="RoundRectangle 10" Padding="12">
+                            <VerticalStackLayout HorizontalOptions="Center">
+                                <Label Text="Yolculuklar" FontSize="12" TextColor="#333" HorizontalOptions="Center" />
+                                <Label Text="0" FontSize="18" FontAttributes="Bold" TextColor="#111" HorizontalOptions="Center" />
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <Border BackgroundColor="#FBFEFE" StrokeShape="RoundRectangle 10" Padding="12">
+                            <VerticalStackLayout HorizontalOptions="Center">
+                                <Label Text="Puan" FontSize="12" TextColor="#333" HorizontalOptions="Center" />
+                                <Label Text="5.0" FontSize="18" FontAttributes="Bold" TextColor="#111" HorizontalOptions="Center" />
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <Border BackgroundColor="#FBFEFE" StrokeShape="RoundRectangle 10" Padding="12">
+                            <VerticalStackLayout HorizontalOptions="Center">
+                                <Label Text="Boş Koltuk" FontSize="12" TextColor="#333" HorizontalOptions="Center" />
+                                <Label Text="3" FontSize="18" FontAttributes="Bold" TextColor="#111" HorizontalOptions="Center" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </Grid>
+
+                    <!-- Actions -->
+                    <HorizontalStackLayout Spacing="12" HorizontalOptions="Center">
+                        <Button Text="Profil Düzenle" BackgroundColor="#512BD4" TextColor="White" CornerRadius="12" WidthRequest="140" Clicked="OnEditProfileClicked" />
+                        <Button Text="Şifre Değiştir" BackgroundColor="#F1F3F7" TextColor="#111" CornerRadius="12" WidthRequest="140" Clicked="OnChangePasswordClicked" />
+                    </HorizontalStackLayout>
+
+                    <Button Text="Yeni Yolculuk Ekle" BackgroundColor="#FFB300" TextColor="White" CornerRadius="12" FontAttributes="Bold" Clicked="OnAddRideClicked" />
+
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Settings list -->
+            <VerticalStackLayout Spacing="10" Padding="6">
+                <Label Text="Hesap Ayarları" FontSize="16" FontAttributes="Bold" TextColor="White" />
+
+                <Border BackgroundColor="#FFFFFF" StrokeShape="RoundRectangle 12" Padding="0" StrokeThickness="0">
+                    <VerticalStackLayout Spacing="0">
+                        <Button Text="Bildirim Ayarları" BackgroundColor="Transparent" TextColor="#333" HorizontalOptions="Fill" />
+                        <BoxView HeightRequest="1" Color="#EEF0F2" />
+                        <Button Text="Yardım ve Destek" BackgroundColor="Transparent" TextColor="#333" HorizontalOptions="Fill" />
+                        <BoxView HeightRequest="1" Color="#EEF0F2" />
+                        <Button Text="Hesabı Sil" BackgroundColor="Transparent" TextColor="#D93025" HorizontalOptions="Fill" />
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- Logout button -->
+            <Button Text="Çıkış Yap" BackgroundColor="#E74C3C" TextColor="White" CornerRadius="12" Clicked="OnLogoutClicked" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

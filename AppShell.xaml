@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="KampusRotaUI.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:KampusRotaUI.Views"
+    Shell.FlyoutBehavior="Disabled"
+    Shell.BackgroundColor="{StaticResource White}"
+    Shell.ForegroundColor="{StaticResource Tertiary}"
+    Shell.TitleColor="{StaticResource Tertiary}"
+    Shell.TabBarBackgroundColor="{StaticResource White}"
+    Shell.TabBarForegroundColor="{StaticResource Primary}"
+    Shell.TabBarTitleColor="{StaticResource Primary}"
+    Shell.TabBarUnselectedColor="{StaticResource RideMuted}">
+
+    <!-- Alt Sekme Çubuğu (TabBar) -->
+    <TabBar>
+        <!-- 1. Sekme: Mevcut İlanlar ve Arama -->
+        <Tab Title="Yolculuklar" Icon="ride_icon.png">
+            <ShellContent
+                Title="Yolculuklar"
+                ContentTemplate="{DataTemplate views:MainPage}"
+                Route="MainPage" />
+        </Tab>
+
+        <!-- 2. Sekme: Yeni İlan Verme Sayfası -->
+        <Tab Title="İlan Ver" Icon="add_icon.png">
+            <ShellContent
+                Title="İlan Ver"
+                ContentTemplate="{DataTemplate views:AddRidePage}"
+                Route="AddRidePage" />
+        </Tab>
+
+        <!-- 3. Sekme: Harita -->
+        <Tab Title="Harita" Icon="map_icon.png">
+            <ShellContent
+                Title="Harita"
+                ContentTemplate="{DataTemplate views:MapPage}"
+                Route="MapPage" />
+        </Tab>
+
+        <!-- 4. Sekme: Şifre Değiştirme -->
+        <Tab Title="Güvenlik" Icon="lock_icon.png">
+            <ShellContent
+                Title="Şifre Değiştir"
+                ContentTemplate="{DataTemplate views:ChangePasswordPage}"
+                Route="ChangePasswordPage" />
+        </Tab>
+
+        <!-- 5. Sekme: Profil -->
+        <Tab Title="Profil" Icon="user_icon.png">
+            <ShellContent
+            Title="Profilim"
+            ContentTemplate="{DataTemplate views:ProfilePage}" 
+            Route="ProfilePage" />
+        </Tab>
+    </TabBar>
+
+</Shell>

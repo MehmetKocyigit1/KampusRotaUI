@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KampusRotaUI.Views.Login"
+             NavigationPage.HasNavigationBar="False"
+             Background="{StaticResource AppBackgroundBrush}"
+             Title="Giriş Yap">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="22" Padding="28,56,28,30">
+
+            <!-- Header: remove TranslationY to ensure it's visible on wide/desktop windows -->
+            <VerticalStackLayout Spacing="6"  HorizontalOptions="Center" >
+                <Label Text="KampüsRota" FontSize="36" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center" />
+                <Label Text="Güvenli kampüs yolculuklarına devam et." FontSize="15" TextColor="White" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
+
+            <!-- Reduced top margin so header remains visible on large screens -->
+            <Border Padding="22"
+                    Stroke="{StaticResource RideLine}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 20"
+                    HorizontalOptions="Center"
+                    WidthRequest="360"
+                    Margin="0,80,0,0">
+                <VerticalStackLayout Spacing="16">
+
+                    <Border Stroke="White" StrokeThickness="1" StrokeShape="RoundRectangle 12" Padding="12,0" >
+                        <Entry x:Name="EmailEntry" Placeholder="Üniversite e-postası (.edu.tr)" Keyboard="Email" TextColor="White" />
+                    </Border>
+
+                    <Border Stroke="White" StrokeThickness="1" StrokeShape="RoundRectangle 12"  Padding="12,0" >
+                        <Entry x:Name="PasswordEntry" Placeholder="Şifre" IsPassword="True" TextColor="White" />
+                    </Border>
+
+                    <Label x:Name="ErrorLabel" TextColor="#D93025" FontSize="12" IsVisible="False" />
+
+                    <HorizontalStackLayout Spacing="1" VerticalOptions="Center">
+                        <CheckBox x:Name="RememberMeCheck" Color="{StaticResource Primary}" />
+                        <Label Text="Beni hatırla" VerticalOptions="Center" TextColor="White" />
+                    </HorizontalStackLayout>
+
+                    <Button Text="Giriş yap" BackgroundColor="White" TextColor="Black" CornerRadius="24" FontAttributes="Bold" HeightRequest="50" Clicked="OnLoginClicked" />
+
+                </VerticalStackLayout>
+            </Border>
+
+            <Button Text="Hesabın yok mu? Kayıt ol" BackgroundColor="Transparent" TextColor="White" FontAttributes="Bold" Clicked="OnRegisterNavClicked" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

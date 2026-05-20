@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="tr">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KampusRota</title>
+
+    <!-- MAPLIBRE -->
+    <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
+    <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        #map {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* USER LOCATION MARKER (pulsing) */
+        .user-marker {
+            position: relative;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #007AFF;
+            border: 3px solid white;
+            box-shadow: 0 0 10px rgba(0,122,255,0.7);
+        }
+        .user-marker::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(0,122,255,0.15);
+            animation: pulse 1.6s infinite;
+            z-index: -1;
+        }
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(0.6); opacity: 0.9 }
+            70% { transform: translate(-50%, -50%) scale(1.6); opacity: 0 }
+            100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0 }
+        }
+
+        /* PIN MARKER */
+        .pin-marker {
+            width: 24px;
+            height: 32px;
+            display: block;
+        }
+
+        /* label style for place names */
+        .place-label {
+            display: inline-block;
+            background: white;
+            color: #111;
+            padding: 6px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            border: 1px solid rgba(0,0,0,0.06);
+            white-space: nowrap;
+        }
+
+        /* POPUP */
+        .maplibregl-popup-content {
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="map"></div>
+
+    <script>
+        // Simple console capture for debugging from native app
+        (function(){
+            window.__consoleLogs = [];
+            ['log','info','warn','error'].forEach(function(level){
+                const orig = console[level];
+                console[level] = function(){
+                    try{
+                        const args = Array.prototype.slice.call(arguments).map(function(a){
+                            try { return (typeof a === 'object') ? JSON.stringify(a) : String(a); } catch(e){ return String(a); }
+                        });
+                        window.__consoleLogs.push({ level: level, message: args.join(' ') });
+                    }catch(e){}
+                    if(orig && orig.apply) orig.apply(console, arguments);
+                };
+            });
+            window.getAndClearLogs = function(){ const copy = window.__consoleLogs.slice(); window.__consoleLogs.length = 0; return copy; };
+        })();
+
+        // expose readiness flag
+        window.mapReady = false;
+
+        // =====================================================
+        // ISPARTA SETTINGS
+        // =====================================================
+
+        // FORMAT => [LONGITUDE, LATITUDE]
+        const ispartaCenter = [30.5537, 37.7648];
+        const ispartaSouthWest = [30.40, 37.68];
+        const ispartaNorthEast = [30.70, 37.90];
+
+        const maxBounds = new maplibregl.LngLatBounds(
+            ispartaSouthWest,
+            ispartaNorthEast
+        );
+
+        // =====================================================
+        // MAP CREATE - use simple OSM raster tiles
+        // =====================================================
+
+        const map = new maplibregl.Map({
+            container: "map",
+            style: {
+                version: 8,
+                sources: {
+                    'osm-tiles': {
+                        type: 'raster',
+                        tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+                        tileSize: 256,
+                        attribution: '© OpenStreetMap contributors'
+                    }
+                },
+                layers: [
+                    { id: 'osm-tiles', type: 'raster', source: 'osm-tiles' }
+                ]
+            },
+            center: ispartaCenter,
+            zoom: 12,
+            minZoom: 10,
+            maxZoom: 18,
+            renderWorldCopies: false
+        });
+
+        // apply bounds after creation
+        map.on('load', function(){
+            try{
+                map.setMaxBounds(maxBounds);
+                window.mapReady = true;
+                console.log('Map loaded and bounds set');
+
+                // add markers
+                addImportantPlaceMarkers();
+
+            }catch(e){console.error('setMaxBounds error', e)}
+        });
+
+        // =====================================================
+        // NAVIGATION CONTROLS
+        // =====================================================
+
+        map.addControl(
+            new maplibregl.NavigationControl(),
+            "top-right"
+        );
+
+        // =====================================================
+        // DEBUG LOGS
+        // =====================================================
+
+        console.log("KampusRota Map Initialized");
+
+        // =====================================================
+        // IMPORTANT PLACES DATA (array for markers)
+        // coords are [lng, lat]
+        // =====================================================
+
+        const importantPlaces = [
+            { title: 'Iyaş', coords: [30.544646520371813, 37.7820357443819] },
+            { title: 'Doğu Yerleşkesi', coords: [30.5345, 37.8285] },
+            { title: 'Batı Kampüsü', coords: [30.52643484819006, 37.829387079488605] },
+            { title: '100. Yıl Yerleşkesi', coords: [30.548229307533997, 37.759683693975894] },
+            { title: 'Erkek KYK', coords: [30.56188560473612, 37.782313447651674] },
+            { title: 'Bediüzzaman Kız Yurdu', coords: [30.529422829030903 , 37.84191492788001] },
+            { title: 'Mihri Hatun Kız Yurdu', coords: [30.53145637770997, 37.85498503730966] },
+            { title: 'Kaymakkapı Meydanı', coords: [30.5547, 37.7630] },
+            { title: 'Otogar', coords: [30.537213639241752, 37.810292530456906] }
+        ];
+
+        function createPinElement() {
+            // SVG pin icon (simple)
+            const svg = `
+                <svg class="pin-marker" viewBox="0 0 24 32" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 0C7 0 3.5 3.6 3.5 8.1c0 5.9 7.8 15.8 7.9 15.9.2-.1 7.9-10 7.9-15.9C20.5 3.6 17 0 12 0z" fill="#FF6A00" stroke="#fff" stroke-width="1"/>
+                  <circle cx="12" cy="8.1" r="3" fill="#fff"/>
+                </svg>`;
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = svg;
+            return wrapper.firstElementChild;
+        }
+
+        function addImportantPlaceMarkers() {
+            try {
+                importantPlaces.forEach(place => {
+                    const pinEl = createPinElement();
+                    // label element
+                    const labelEl = document.createElement('div');
+                    labelEl.className = 'place-label';
+                    labelEl.textContent = place.title;
+
+                    // marker for pin (anchor bottom)
+                    new maplibregl.Marker(pinEl, { offset: [0, -16] })
+                        .setLngLat(place.coords)
+                        .addTo(map);
+
+                    // label above pin
+                    new maplibregl.Marker(labelEl, { offset: [0, -40] })
+                        .setLngLat(place.coords)
+                        .addTo(map);
+                });
+                console.log('Important place markers added');
+            } catch (e) {
+                console.error('addImportantPlaceMarkers error', e);
+            }
+        }
+
+        // =====================================================
+        // USER LOCATION
+        // =====================================================
+
+        let userMarker = null;
+
+        function setUserLocation(lat, lng) {
+            try {
+                lat = parseFloat(lat);
+                lng = parseFloat(lng);
+                const position = [lng, lat];
+
+                // Bounds control
+                if (!maxBounds.contains(position)) {
+                    map.flyTo({ center: ispartaCenter, zoom: 12, speed: 0.8 });
+                    console.warn('User outside Isparta bounds');
+                    return;
+                }
+
+                if (userMarker == null) {
+                    const element = document.createElement('div');
+                    element.className = 'user-marker';
+
+                    userMarker = new maplibregl.Marker(element)
+                        .setLngLat(position)
+                        .setPopup(new maplibregl.Popup({ offset: 25 }).setText('Konumunuz'))
+                        .addTo(map);
+                } else {
+                    userMarker.setLngLat(position);
+                }
+
+                map.flyTo({ center: position, zoom: 15, speed: 1 });
+                console.log('User location updated');
+
+            } catch (error) {
+                console.error('setUserLocation error:', error);
+            }
+        }
+
+        // =====================================================
+        // ROUTE SYSTEM
+        // =====================================================
+
+        const routeSourceId = 'route-source';
+        const routeLayerId = 'route-layer';
+
+        function drawRoute(routeCoordinates) {
+            try {
+                const convertedCoordinates = routeCoordinates.map(point => [parseFloat(point[1]), parseFloat(point[0])]);
+
+                const geojson = { type: 'Feature', geometry: { type: 'LineString', coordinates: convertedCoordinates } };
+
+                if (map.getSource(routeSourceId)) {
+                    map.getSource(routeSourceId).setData(geojson);
+                } else {
+                    map.addSource(routeSourceId, { type: 'geojson', data: geojson });
+                    map.addLayer({
+                        id: routeLayerId,
+                        type: 'line',
+                        source: routeSourceId,
+                        layout: { 'line-join': 'round', 'line-cap': 'round' },
+                        paint: { 'line-color': '#007AFF', 'line-width': 6, 'line-opacity': 0.9 }
+                    });
+                }
+
+                if (convertedCoordinates.length > 0) {
+                    const bounds = convertedCoordinates.reduce((bounds, coord) => bounds.extend(coord), new maplibregl.LngLatBounds(convertedCoordinates[0], convertedCoordinates[0]));
+                    const fitted = bounds.intersect(maxBounds) || bounds;
+                    map.fitBounds(fitted, { padding: 60, maxZoom: 16, duration: 1500 });
+                }
+
+                console.log('Route drawn');
+            } catch (error) {
+                console.error('drawRoute error:', error);
+            }
+        }
+
+        // =====================================================
+        // GLOBAL FUNCTIONS
+        // =====================================================
+        window.setUserLocation = setUserLocation;
+        window.drawRoute = drawRoute;
+
+    </script>
+</body>
+</html>
