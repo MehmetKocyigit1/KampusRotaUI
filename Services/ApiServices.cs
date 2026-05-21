@@ -6,7 +6,7 @@ using KampusRotaUI.Models;
 
 namespace KampusRotaUI.Services;
 
-public class ApiServices
+public class ApiServices : IApiService
 {
     private readonly HttpClient _httpClient;
 
@@ -103,7 +103,7 @@ public class ApiServices
     {
         try
         {
-            var url = $"api/users/login?email={email}&sifre={sifre}";
+            var url = $"api/users/login?email={Uri.EscapeDataString(email)}&sifre={Uri.EscapeDataString(sifre)}";
             var response = await _httpClient.PostAsync(url, null);
 
             if (response.IsSuccessStatusCode)
@@ -123,7 +123,18 @@ public class ApiServices
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync("api/users/register", yeniKullanici);
+            var request = new
+            {
+                yeniKullanici.Ad,
+                yeniKullanici.Soyad,
+                yeniKullanici.Email,
+                Sifre = yeniKullanici.SifreHash,
+                yeniKullanici.TelefonNumarasi,
+                yeniKullanici.OgrenciNumarasi,
+                yeniKullanici.Cinsiyet
+            };
+
+            var response = await _httpClient.PostAsJsonAsync("api/users/register", request);
             if (response.IsSuccessStatusCode)
             {
                 return await response.Content.ReadFromJsonAsync<Kullanici>();
@@ -159,7 +170,18 @@ public class ApiServices
         try
         {
             var url = $"api/rides?kullaniciId={kullaniciId}";
-            var response = await _httpClient.PostAsJsonAsync(url, yeniYolculuk);
+            var request = new
+            {
+                yeniYolculuk.KalkisNoktasi,
+                yeniYolculuk.VarisNoktasi,
+                yeniYolculuk.KalkisZamani,
+                yeniYolculuk.BosKoltukSayisi,
+                yeniYolculuk.KisiBasiUcret,
+                yeniYolculuk.Aciklama,
+                yeniYolculuk.SadeceKadinlarMi
+            };
+
+            var response = await _httpClient.PostAsJsonAsync(url, request);
             return response.IsSuccessStatusCode;
         }
         catch (Exception ex)
@@ -179,6 +201,61 @@ public class ApiServices
         {
             Debug.WriteLine("VERİ ÇEKME HATASI: " + ex.Message);
             return new List<Yolculuk>();
+        }
+    }
+
+    public async Task<List<Yolculuk>> YolculuklariAraAsync(string? kalkis, string? varis, DateTime? tarih, bool? sadeceKadinlar)
+    {
+        try
+        {
+            var query = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(kalkis))
+                query.Add($"kalkis={Uri.EscapeDataString(kalkis)}");
+
+            if (!string.IsNullOrWhiteSpace(varis))
+                query.Add($"varis={Uri.EscapeDataString(varis)}");
+
+            if (tarih.HasValue)
+                query.Add($"tarih={Uri.EscapeDataString(tarih.Value.ToString("yyyy-MM-dd"))}");
+
+            if (sadeceKadinlar.HasValue)
+                query.Add($"sadeceKadinlar={sadeceKadinlar.Value.ToString().ToLowerInvariant()}");
+
+            var url = query.Count == 0 ? "api/rides" : $"api/rides?{string.Join("&", query)}";
+            return await _httpClient.GetFromJsonAsync<List<Yolculuk>>(url) ?? new List<Yolculuk>();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine("ARAMA HATASI: " + ex.Message);
+            return new List<Yolculuk>();
+        }
+    }
+
+    public async Task<bool> YolculukGuncelleAsync(Yolculuk yolculuk, int kullaniciId)
+    {
+        try
+        {
+            var url = $"api/rides/{yolculuk.Id}?guncelleyenKullaniciId={kullaniciId}";
+            var request = new
+            {
+                yolculuk.KalkisNoktasi,
+                yolculuk.VarisNoktasi,
+                yolculuk.KalkisZamani,
+                yolculuk.BosKoltukSayisi,
+                yolculuk.KisiBasiUcret,
+                yolculuk.Aciklama,
+                yolculuk.SadeceKadinlarMi,
+                yolculuk.AktifMi
+            };
+
+            var response = await _httpClient.PutAsJsonAsync(url, request);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine("GUNCELLEME HATASI: " + ex.Message);
+            return false;
         }
     }
 

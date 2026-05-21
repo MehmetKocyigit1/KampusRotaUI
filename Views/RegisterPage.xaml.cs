@@ -5,10 +5,10 @@ namespace KampusRotaUI.Views;
 
 public partial class RegisterPage : ContentPage
 {
-    private readonly ApiServices _apiService = new ApiServices();
+    private readonly IApiService _apiService = new ApiServices();
 
     // Seçilen cinsiyet burada tutulacak
-    private string selectedGender = "";
+    private string selectedGender = "Erkek";
 
     public RegisterPage()
     {
@@ -96,7 +96,7 @@ public partial class RegisterPage : ContentPage
             // E-POSTA KONTROLÜ
             // =========================
 
-            if (!email.EndsWith(".edu.tr"))
+            if (!email.Contains('@') || !email.EndsWith(".edu.tr", StringComparison.OrdinalIgnoreCase))
             {
                 await DisplayAlert(
                     "Geçersiz E-posta",
@@ -141,6 +141,7 @@ public partial class RegisterPage : ContentPage
                 OgrenciNumarasi = ogrenciNo ?? "",
                 Email = email,
                 SifreHash = sifre,
+                TelefonNumarasi = string.Empty,
                 Cinsiyet = cinsiyet,
                 AktifMi = true,
                 SilindiMi = false

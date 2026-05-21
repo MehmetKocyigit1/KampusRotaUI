@@ -7,7 +7,7 @@ namespace KampusRotaUI.Views;
 
 public partial class MainPage : ContentPage
 {
-    private readonly ApiServices _apiService;
+    private readonly IApiService _apiService;
 
     // Modelimizi İngilizce 'Ride' yerine yeni Türkçe 'Yolculuk' modelimize çevirdik
     public ObservableCollection<Yolculuk> Rides { get; set; } = new();
@@ -60,12 +60,7 @@ public partial class MainPage : ContentPage
 
         try
         {
-            var allRides = await _apiService.TumYolculuklariGetirAsync();
-
-            // Filtrelemeyi yeni Türkçe özelliklere (KalkisNoktasi, KalkisZamani) göre yapıyoruz
-            var filteredRides = allRides.Where(r =>
-                r.KalkisNoktasi == selectedStart &&
-                r.KalkisZamani.Date == selectedDate.Date).ToList();
+            var filteredRides = await _apiService.YolculuklariAraAsync(selectedStart, null, selectedDate, null);
 
             Rides.Clear();
             foreach (var ride in filteredRides)
@@ -94,7 +89,7 @@ public partial class MainPage : ContentPage
     {
         try
         {
-             int userId = Preferences.Default.Get("UserId", 0);
+            int userId = Preferences.Default.Get("UserId", 0);
 
             if (userId == 0)
             {
@@ -123,5 +118,64 @@ public partial class MainPage : ContentPage
         {
             await DisplayAlert("Hata", "Bir sorun oluştu: " + ex.Message, "Tamam");
         }
+    }
+
+    private async void OnEditRideClicked(object sender, EventArgs e)
+    {
+        if (sender is not Button button || button.BindingContext is not Yolculuk yolculuk)
+        {
+            return;
+        }
+
+        int userId = Preferences.Default.Get("UserId", 0);
+        if (userId == 0)
+        {
+            await DisplayAlert("Oturum Hatası", "Lütfen tekrar giriş yapın.", "Tamam");
+            return;
+        }
+
+        if (yolculuk.SurucuId != userId)
+        {
+            await DisplayAlert("Yetki Yok", "Sadece kendi ilanınızı düzenleyebilirsiniz.", "Tamam");
+            return;
+        }
+
+        await Navigation.PushAsync(new EditRidePage(yolculuk));
+    }
+
+    private async void OnDeleteRideClicked(object sender, EventArgs e)
+    {
+        if (sender is not Button button || button.BindingContext is not Yolculuk yolculuk)
+        {
+            return;
+        }
+
+        int userId = Preferences.Default.Get("UserId", 0);
+        if (userId == 0)
+        {
+            await DisplayAlert("Oturum Hatası", "Lütfen tekrar giriş yapın.", "Tamam");
+            return;
+        }
+
+        if (yolculuk.SurucuId != userId)
+        {
+            await DisplayAlert("Yetki Yok", "Sadece kendi ilanınızı silebilirsiniz.", "Tamam");
+            return;
+        }
+
+        bool confirm = await DisplayAlert("İlanı Sil", "Bu yolculuk ilanını silmek istiyor musunuz?", "Sil", "Vazgeç");
+        if (!confirm)
+        {
+            return;
+        }
+
+        bool success = await _apiService.YolculukSilAsync(yolculuk.Id, userId);
+        if (!success)
+        {
+            await DisplayAlert("Hata", "İlan silinemedi.", "Tamam");
+            return;
+        }
+
+        Rides.Remove(yolculuk);
     }
 }

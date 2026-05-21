@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="850" viewBox="0 0 1200 850">
+  <title>Isparta Gul Kremi Teslimat Grafi</title>
+  <style>
+    .edge { stroke: #6b7280; stroke-width: 2; opacity: 0.8; }
+    .node { fill: #fff7f8; stroke: #b94063; stroke-width: 2; }
+    .depot { fill: #ffe4e6; stroke: #9f1239; stroke-width: 3; }
+    .label { font-family: Arial, sans-serif; font-size: 12px; fill: #111827; text-anchor: middle; }
+    .title { font-family: Arial, sans-serif; font-size: 24px; font-weight: 700; fill: #111827; text-anchor: middle; }
+  </style>
+
+  <text x="600" y="38" class="title">Isparta Gul Kremi Teslimat Grafi</text>
+
+  <g id="edges">
+    <line class="edge" x1="520" y1="100" x2="560" y2="190"/>
+    <line class="edge" x1="520" y1="100" x2="470" y2="180"/>
+    <line class="edge" x1="520" y1="100" x2="400" y2="260"/>
+    <line class="edge" x1="410" y1="480" x2="500" y2="420"/>
+    <line class="edge" x1="410" y1="480" x2="310" y2="420"/>
+    <line class="edge" x1="410" y1="480" x2="470" y2="620"/>
+    <line class="edge" x1="410" y1="480" x2="650" y2="470"/>
+    <line class="edge" x1="500" y1="420" x2="520" y2="300"/>
+    <line class="edge" x1="500" y1="420" x2="600" y2="360"/>
+    <line class="edge" x1="500" y1="420" x2="650" y2="470"/>
+    <line class="edge" x1="520" y1="300" x2="470" y2="180"/>
+    <line class="edge" x1="520" y1="300" x2="600" y2="360"/>
+    <line class="edge" x1="520" y1="300" x2="400" y2="260"/>
+    <line class="edge" x1="520" y1="300" x2="560" y2="190"/>
+    <line class="edge" x1="470" y1="180" x2="850" y2="80"/>
+    <line class="edge" x1="470" y1="180" x2="720" y2="170"/>
+    <line class="edge" x1="470" y1="180" x2="560" y2="190"/>
+    <line class="edge" x1="470" y1="180" x2="400" y2="260"/>
+    <line class="edge" x1="850" y1="80" x2="720" y2="170"/>
+    <line class="edge" x1="720" y1="170" x2="740" y2="280"/>
+    <line class="edge" x1="720" y1="170" x2="560" y2="190"/>
+    <line class="edge" x1="310" y1="420" x2="350" y2="590"/>
+    <line class="edge" x1="310" y1="420" x2="400" y2="260"/>
+    <line class="edge" x1="310" y1="420" x2="250" y2="520"/>
+    <line class="edge" x1="600" y1="360" x2="740" y2="280"/>
+    <line class="edge" x1="600" y1="360" x2="650" y2="470"/>
+    <line class="edge" x1="740" y1="280" x2="560" y2="190"/>
+    <line class="edge" x1="650" y1="640" x2="470" y2="620"/>
+    <line class="edge" x1="650" y1="640" x2="800" y2="590"/>
+    <line class="edge" x1="650" y1="640" x2="650" y2="470"/>
+    <line class="edge" x1="650" y1="640" x2="580" y2="760"/>
+    <line class="edge" x1="470" y1="620" x2="350" y2="590"/>
+    <line class="edge" x1="470" y1="620" x2="360" y2="730"/>
+    <line class="edge" x1="800" y1="590" x2="650" y2="470"/>
+    <line class="edge" x1="800" y1="590" x2="580" y2="760"/>
+    <line class="edge" x1="180" y1="660" x2="350" y2="590"/>
+    <line class="edge" x1="180" y1="660" x2="250" y2="520"/>
+    <line class="edge" x1="180" y1="660" x2="360" y2="730"/>
+    <line class="edge" x1="350" y1="590" x2="250" y2="520"/>
+    <line class="edge" x1="350" y1="590" x2="360" y2="730"/>
+    <line class="edge" x1="400" y1="260" x2="250" y2="520"/>
+    <line class="edge" x1="360" y1="730" x2="580" y2="760"/>
+  </g>
+
+  <g id="nodes">
+    <g><circle class="depot" cx="520" cy="100" r="34"/><text class="label" x="520" y="96"><tspan x="520">0</tspan><tspan x="520" dy="14">Depo</tspan></text></g>
+    <g><circle class="node" cx="410" cy="480" r="32"/><text class="label" x="410" y="476"><tspan x="410">1</tspan><tspan x="410" dy="14">Kaymakkapi</tspan></text></g>
+    <g><circle class="node" cx="500" cy="420" r="32"/><text class="label" x="500" y="416"><tspan x="500">2</tspan><tspan x="500" dy="14">Mimar Sinan</tspan></text></g>
+    <g><circle class="node" cx="520" cy="300" r="32"/><text class="label" x="520" y="296"><tspan x="520">3</tspan><tspan x="520" dy="14">IYAS Park</tspan></text></g>
+    <g><circle class="node" cx="470" cy="180" r="32"/><text class="label" x="470" y="176"><tspan x="470">4</tspan><tspan x="470" dy="14">Otogar</tspan></text></g>
+    <g><circle class="node" cx="850" cy="80" r="32"/><text class="label" x="850" y="76"><tspan x="850">5</tspan><tspan x="850" dy="14">SDU</tspan></text></g>
+    <g><circle class="node" cx="720" cy="170" r="32"/><text class="label" x="720" y="166"><tspan x="720">6</tspan><tspan x="720" dy="14">Cunur</tspan></text></g>
+    <g><circle class="node" cx="310" cy="420" r="32"/><text class="label" x="310" y="416"><tspan x="310">7</tspan><tspan x="310" dy="14">Bahcelievler</tspan></text></g>
+    <g><circle class="node" cx="600" cy="360" r="32"/><text class="label" x="600" y="356"><tspan x="600">8</tspan><tspan x="600" dy="14">Modernevler</tspan></text></g>
+    <g><circle class="node" cx="740" cy="280" r="32"/><text class="label" x="740" y="276"><tspan x="740">9</tspan><tspan x="740" dy="14">Fatih</tspan></text></g>
+    <g><circle class="node" cx="650" cy="640" r="32"/><text class="label" x="650" y="636"><tspan x="650">10</tspan><tspan x="650" dy="14">Davraz</tspan></text></g>
+    <g><circle class="node" cx="470" cy="620" r="32"/><text class="label" x="470" y="616"><tspan x="470">11</tspan><tspan x="470" dy="14">Gulistan</tspan></text></g>
+    <g><circle class="node" cx="800" cy="590" r="32"/><text class="label" x="800" y="586"><tspan x="800">12</tspan><tspan x="800" dy="14">Karaagac</tspan></text></g>
+    <g><circle class="node" cx="560" cy="190" r="32"/><text class="label" x="560" y="186"><tspan x="560">13</tspan><tspan x="560" dy="14">Sanayi</tspan></text></g>
+    <g><circle class="node" cx="180" cy="660" r="32"/><text class="label" x="180" y="656"><tspan x="180">14</tspan><tspan x="180" dy="14">Gokcay</tspan></text></g>
+    <g><circle class="node" cx="650" cy="470" r="32"/><text class="label" x="650" y="466"><tspan x="650">15</tspan><tspan x="650" dy="14">Anadolu</tspan></text></g>
+    <g><circle class="node" cx="350" cy="590" r="32"/><text class="label" x="350" y="586"><tspan x="350">16</tspan><tspan x="350" dy="14">Vatan</tspan></text></g>
+    <g><circle class="node" cx="400" cy="260" r="32"/><text class="label" x="400" y="256"><tspan x="400">17</tspan><tspan x="400" dy="14">Cayboyu</tspan></text></g>
+    <g><circle class="node" cx="250" cy="520" r="32"/><text class="label" x="250" y="516"><tspan x="250">18</tspan><tspan x="250" dy="14">Sermet</tspan></text></g>
+    <g><circle class="node" cx="360" cy="730" r="32"/><text class="label" x="360" y="726"><tspan x="360">19</tspan><tspan x="360" dy="14">Yedisehitler</tspan></text></g>
+    <g><circle class="node" cx="580" cy="760" r="32"/><text class="label" x="580" y="756"><tspan x="580">20</tspan><tspan x="580" dy="14">Akkent</tspan></text></g>
+  </g>
+</svg>

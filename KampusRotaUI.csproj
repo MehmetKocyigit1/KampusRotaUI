@@ -34,6 +34,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Compile Remove="KampusRota.Api\**\*.cs" />
+		<Compile Remove="Views\LoginPage.xaml.cs" />
+		<EmbeddedResource Remove="KampusRota.Api\**\*" />
+		<MauiXaml Remove="KampusRota.Api\**\*.xaml" />
+		<None Remove="KampusRota.Api\**\*" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Maui" Version="8.0.1" />
 		<PackageReference Include="Google_GenerativeAI" Version="3.6.6" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="8.0.100" />

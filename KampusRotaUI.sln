@@ -5,6 +5,8 @@ VisualStudioVersion = 17.14.36511.14 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KampusRotaUI", "KampusRotaUI.csproj", "{F59B077F-2AE3-4BEB-9383-D3664B19B44E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KampusRota.Api", "KampusRota.Api\KampusRota.Api.csproj", "{38E65EDF-3F4A-465E-9347-A826DEC9C6DB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,6 +19,10 @@ Global
 		{F59B077F-2AE3-4BEB-9383-D3664B19B44E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F59B077F-2AE3-4BEB-9383-D3664B19B44E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F59B077F-2AE3-4BEB-9383-D3664B19B44E}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{38E65EDF-3F4A-465E-9347-A826DEC9C6DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38E65EDF-3F4A-465E-9347-A826DEC9C6DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38E65EDF-3F4A-465E-9347-A826DEC9C6DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38E65EDF-3F4A-465E-9347-A826DEC9C6DB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

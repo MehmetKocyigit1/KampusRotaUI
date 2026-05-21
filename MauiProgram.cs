@@ -1,5 +1,5 @@
-﻿using KampusRotaUI;
-using CommunityToolkit.Maui; // Toolkit için
+﻿using CommunityToolkit.Maui; // Toolkit için
+using KampusRotaUI.Services;
 using Microsoft.Extensions.Logging;
 
 namespace KampusRotaUI;
@@ -19,7 +19,8 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
 
-         builder.Services.AddSingleton<HttpClient>();
+        builder.Services.AddSingleton<HttpClient>();
+        builder.Services.AddSingleton<IApiService, ApiServices>();
 
 
 #if DEBUG
