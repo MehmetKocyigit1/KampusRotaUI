@@ -5,7 +5,7 @@ namespace KampusRotaUI.Views;
 
 public partial class Login : ContentPage
 {
-    private readonly IApiService _apiService = new ApiServices();
+    private readonly ApiServices _apiService = new ApiServices();
 
     public Login()
     {
@@ -41,15 +41,14 @@ public partial class Login : ContentPage
             }
 
             // Veriler null gelirse çökmemesi için ?? operatörünü kullanıyoruz
+            string userId = kullanici.Id.ToString();
             string tamAd = kullanici.TamAd ?? "Kullanıcı";
             string userEmail = kullanici.Email ?? email;
 
-            Preferences.Default.Remove("UserId");
-            Preferences.Default.Set("UserId", kullanici.Id);
+            Preferences.Default.Set("UserId", userId);
             Preferences.Default.Set("UserFullName", tamAd);
             Preferences.Default.Set("UserEmail", userEmail);
             Preferences.Default.Set("UserGender", kullanici.Cinsiyet);
-            Preferences.Default.Set("RememberMe", RememberMeCheck?.IsChecked ?? false);
 
             Debug.WriteLine($"GİRİŞ BAŞARILI: {tamAd}");
 

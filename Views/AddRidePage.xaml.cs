@@ -7,7 +7,7 @@ namespace KampusRotaUI.Views;
 public partial class AddRidePage : ContentPage
 {
     // Servis bağlantımız
-    private readonly IApiService _apiService = new ApiServices();
+    private readonly ApiServices _apiService = new ApiServices();
 
     public AddRidePage()
     {
@@ -39,27 +39,10 @@ public partial class AddRidePage : ContentPage
             return;
         }
 
-        if (kalkis == varis)
-        {
-            await DisplayAlert("Hatalı Rota", "Kalkış ve varış noktası aynı olamaz.", "Tamam");
-            return;
-        }
-
-        if (RideDatePicker.Date.Add(RideTimePicker.Time) < DateTime.Now)
-        {
-            await DisplayAlert("Hatalı Tarih", "Geçmiş tarihli yolculuk yayınlayamazsınız.", "Tamam");
-            return;
-        }
-
         // 4. Model nesnesini oluştur (Yeni Türkçe 'Yolculuk' modelimize %100 uyumlu)
         // 1. Önce veriyi dışarıda hazırla (Süslü parantezin DIŞINDA)
-        int surucuId = Preferences.Default.Get("UserId", 0);
-
-        if (surucuId == 0)
-        {
-            await DisplayAlert("Oturum Hatası", "Lütfen tekrar giriş yapın.", "Tamam");
-            return;
-        }
+        string userIdStr = Preferences.Default.Get("UserId", "0");
+        int surucuId = int.Parse(userIdStr);
 
         // 2. Şimdi nesneyi oluştur
         var yeniYolculuk = new Yolculuk

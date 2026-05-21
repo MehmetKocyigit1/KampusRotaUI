@@ -4,9 +4,6 @@ public class Kullanici
 {
      public int Id { get; set; }
     public DateTime OlusturulmaTarihi { get; set; }
-    public int? OlusturanKullaniciId { get; set; }
-    public DateTime? GuncellenmeTarihi { get; set; }
-    public int? GuncelleyenKullaniciId { get; set; }
     public bool AktifMi { get; set; }
     public bool SilindiMi { get; set; }
 

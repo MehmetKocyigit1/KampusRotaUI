@@ -80,7 +80,7 @@
                                     Stroke="{StaticResource RideLine}"
                                     StrokeThickness="1"
                                     StrokeShape="RoundRectangle 16">
-                                <Grid ColumnDefinitions="16, *, Auto" ColumnSpacing="14" RowDefinitions="Auto, Auto, Auto">
+                                <Grid ColumnDefinitions="16, *, Auto" ColumnSpacing="14" RowDefinitions="Auto, Auto">
                                     <Grid Grid.Column="0" Grid.RowSpan="2" RowDefinitions="14, *, 14" WidthRequest="16">
                                         <Border Grid.Row="0" BackgroundColor="{StaticResource Primary}" Stroke="Transparent" StrokeShape="RoundRectangle 6" HeightRequest="12" WidthRequest="12" HorizontalOptions="Center" />
                                         <BoxView Grid.Row="1" WidthRequest="2" BackgroundColor="{StaticResource RideLine}" HorizontalOptions="Center" />
@@ -104,25 +104,6 @@
                                         <Border Stroke="Transparent" BackgroundColor="#F4ECFA" StrokeShape="RoundRectangle 12" Padding="10,5" IsVisible="{Binding SadeceKadinlarMi}">
                                             <Label Text="{Binding KadinaOzelMetni}" FontSize="12" TextColor="#7B3FA0" FontAttributes="Bold" />
                                         </Border>
-                                    </HorizontalStackLayout>
-
-                                    <HorizontalStackLayout Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="2" Spacing="8" Margin="0,12,0,0" HorizontalOptions="End">
-                                        <Button Text="Düzenle"
-                                                BackgroundColor="#EEF5FF"
-                                                TextColor="{StaticResource Primary}"
-                                                CornerRadius="16"
-                                                FontSize="12"
-                                                Padding="14,5"
-                                                HeightRequest="34"
-                                                Clicked="OnEditRideClicked" />
-                                        <Button Text="Sil"
-                                                BackgroundColor="#FDECEC"
-                                                TextColor="#C62828"
-                                                CornerRadius="16"
-                                                FontSize="12"
-                                                Padding="14,5"
-                                                HeightRequest="34"
-                                                Clicked="OnDeleteRideClicked" />
                                     </HorizontalStackLayout>
                                 </Grid>
                             </Border>

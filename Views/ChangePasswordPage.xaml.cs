@@ -6,7 +6,7 @@ namespace KampusRotaUI.Views;
 public partial class ChangePasswordPage : ContentPage
 {
     // API ile iletişim kuracak servisimiz
-    private readonly IApiService _apiService = new ApiServices();
+    private readonly ApiServices _apiService = new ApiServices();
 
     public ChangePasswordPage()
     {
