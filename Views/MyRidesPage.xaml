@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KampusRotaUI.Views.MyRidesPage"
+             Title="Yolculuklarım"
+             NavigationPage.HasNavigationBar="False"
+             Background="{StaticResource AppBackgroundBrush}">
+
+    <RefreshView x:Name="RefreshContainer" Refreshing="OnRefreshRequested">
+        <ScrollView>
+            <VerticalStackLayout Padding="18,22,18,30" Spacing="16">
+
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" RowSpacing="10">
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="Yolculuklarım" FontSize="26" FontAttributes="Bold" TextColor="#1D9DE5" />
+                        <Label Text="İlanlarını, katılım taleplerini ve puanlamaları yönet." FontSize="12" TextColor="#6B7280" />
+                    </VerticalStackLayout>
+                    <Button Grid.Column="1"
+                            Text="Yenile"
+                            Clicked="OnRefreshClicked"
+                            BackgroundColor="#D6EEFB"
+                            TextColor="#1D9DE5"
+                            CornerRadius="14"
+                            FontAttributes="Bold"
+                            HeightRequest="42" />
+
+                    <Border x:Name="PendingRequestsBadge"
+                            Grid.Row="1"
+                            Grid.ColumnSpan="2"
+                            BackgroundColor="#FFF5D6"
+                            Stroke="#F59E0B"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 14"
+                            Padding="12,8"
+                            IsVisible="False">
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                            <Label Text="!" TextColor="#B7791F" FontAttributes="Bold" VerticalOptions="Center" />
+                            <Label x:Name="PendingRequestsBadgeLabel"
+                                   Grid.Column="1"
+                                   Text="Yeni katılım talebin var"
+                                   TextColor="#7C4A03"
+                                   FontSize="12"
+                                   FontAttributes="Bold"
+                                   VerticalOptions="Center" />
+                            <Label Grid.Column="2" Text="Yenile" TextColor="#B7791F" FontSize="11" FontAttributes="Bold" VerticalOptions="Center" />
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <Border BackgroundColor="#EAF6FD" Stroke="#BDDDED" StrokeShape="RoundRectangle 18" Padding="14">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="YAYINLADIĞIM İLANLAR" FontSize="12" FontAttributes="Bold" TextColor="#74777D" />
+                        <CollectionView x:Name="MyPublishedRidesCollection">
+                            <CollectionView.EmptyView>
+                                <Label Text="Henüz yayınladığın ilan yok." TextColor="#6B7280" FontSize="13" />
+                            </CollectionView.EmptyView>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="0,5" Padding="12" BackgroundColor="#D6EEFB" Stroke="Transparent" StrokeShape="RoundRectangle 14">
+                                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                            <VerticalStackLayout Spacing="3">
+                                                <Label Text="{Binding Rota}" FontAttributes="Bold" FontSize="15" TextColor="#111827" />
+                                                <Label Text="{Binding TarihFormatli}" FontSize="12" TextColor="#4B5563" />
+                                                <Label Text="{Binding BosKoltukSayisi, StringFormat='Boş koltuk: {0}'}" FontSize="12" TextColor="#1D9DE5" FontAttributes="Bold" />
+                                            </VerticalStackLayout>
+                                            <Button Grid.Column="1"
+                                                    Text="Sil"
+                                                    Clicked="OnDeleteRideClicked"
+                                                    CommandParameter="{Binding .}"
+                                                    BackgroundColor="#FFE8E8"
+                                                    TextColor="#EF4444"
+                                                    FontAttributes="Bold"
+                                                    CornerRadius="12"
+                                                    HeightRequest="38" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border BackgroundColor="#EAF6FD" Stroke="#BDDDED" StrokeShape="RoundRectangle 18" Padding="14">
+                    <VerticalStackLayout Spacing="10">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="GELEN KATILIM TALEPLERİ" FontSize="12" FontAttributes="Bold" TextColor="#74777D" />
+                            <Border x:Name="IncomingPendingCountBadge"
+                                    Grid.Column="1"
+                                    BackgroundColor="#1D9DE5"
+                                    Stroke="Transparent"
+                                    StrokeShape="RoundRectangle 10"
+                                    Padding="8,3"
+                                    IsVisible="False">
+                                <Label x:Name="IncomingPendingCountLabel"
+                                       Text="0 yeni"
+                                       TextColor="White"
+                                       FontSize="10"
+                                       FontAttributes="Bold" />
+                            </Border>
+                        </Grid>
+                        <CollectionView x:Name="IncomingRequestsCollection">
+                            <CollectionView.EmptyView>
+                                <Label Text="Şu anda bekleyen veya sonuçlanmış talep yok." TextColor="#6B7280" FontSize="13" />
+                            </CollectionView.EmptyView>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="0,5" Padding="12" BackgroundColor="#D6EEFB" Stroke="{Binding KartVurguRengi}" StrokeThickness="1" StrokeShape="RoundRectangle 14">
+                                        <VerticalStackLayout Spacing="8">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <VerticalStackLayout Spacing="2">
+                                                    <Label Text="{Binding Yolcu.TamAd, StringFormat='Yolcu: {0}'}" FontAttributes="Bold" FontSize="15" TextColor="#111827" />
+                                                    <Label Text="{Binding Yolculuk.Rota}" FontSize="12" TextColor="#4B5563" />
+                                                </VerticalStackLayout>
+                                                <Label Grid.Column="1" Text="{Binding Durum}" TextColor="{Binding DurumRengi}" FontAttributes="Bold" FontSize="12" VerticalOptions="Center" />
+                                            </Grid>
+
+                                            <Grid ColumnDefinitions="*,*" ColumnSpacing="8" IsVisible="{Binding BekliyorMu}">
+                                                <Button Text="Onayla"
+                                                        Clicked="OnApproveRequestClicked"
+                                                        CommandParameter="{Binding .}"
+                                                        BackgroundColor="#1D9DE5"
+                                                        TextColor="White"
+                                                        FontAttributes="Bold"
+                                                        CornerRadius="12"
+                                                        HeightRequest="40" />
+                                                <Button Grid.Column="1"
+                                                        Text="Reddet"
+                                                        Clicked="OnRejectRequestClicked"
+                                                        CommandParameter="{Binding .}"
+                                                        BackgroundColor="#FFE8E8"
+                                                        TextColor="#EF4444"
+                                                        FontAttributes="Bold"
+                                                        CornerRadius="12"
+                                                        HeightRequest="40" />
+                                            </Grid>
+
+                                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" IsVisible="{Binding SonuclandiMi}">
+                                                <Label Text="Talep sonuçlandırıldı."
+                                                       TextColor="#4B5563"
+                                                       FontSize="12"
+                                                       VerticalOptions="Center" />
+                                                <Button Grid.Column="1"
+                                                        Text="Puanla"
+                                                        Clicked="OnRatePassengerClicked"
+                                                        CommandParameter="{Binding .}"
+                                                        BackgroundColor="#FFF5D6"
+                                                        TextColor="#B7791F"
+                                                        FontAttributes="Bold"
+                                                        CornerRadius="12"
+                                                        HeightRequest="40"
+                                                        WidthRequest="92"
+                                                        IsVisible="{Binding OnaylandiMi}" />
+                                            </Grid>
+                                        </VerticalStackLayout>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border BackgroundColor="#EAF6FD" Stroke="#BDDDED" StrokeShape="RoundRectangle 18" Padding="14">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="KATILDIĞIM / TALEP ETTİĞİM YOLCULUKLAR" FontSize="12" FontAttributes="Bold" TextColor="#74777D" />
+                        <CollectionView x:Name="OutgoingRequestsCollection">
+                            <CollectionView.EmptyView>
+                                <Label Text="Henüz katılım talebin yok." TextColor="#6B7280" FontSize="13" />
+                            </CollectionView.EmptyView>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="0,5" Padding="12" BackgroundColor="#D6EEFB" Stroke="Transparent" StrokeShape="RoundRectangle 14">
+                                        <VerticalStackLayout Spacing="8">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <VerticalStackLayout Spacing="2">
+                                                    <Label Text="{Binding Yolculuk.Rota}" FontAttributes="Bold" FontSize="15" TextColor="#111827" />
+                                                    <Label Text="{Binding Yolculuk.TarihFormatli}" FontSize="12" TextColor="#4B5563" />
+                                                </VerticalStackLayout>
+                                                <Label Grid.Column="1" Text="{Binding Durum}" TextColor="{Binding DurumRengi}" FontAttributes="Bold" FontSize="12" VerticalOptions="Center" />
+                                            </Grid>
+                                            <Button Text="Sürücüyü puanla / yorumla"
+                                                    Clicked="OnRateDriverClicked"
+                                                    CommandParameter="{Binding .}"
+                                                    BackgroundColor="#FFF5D6"
+                                                    TextColor="#B7791F"
+                                                    FontAttributes="Bold"
+                                                    CornerRadius="12"
+                                                    HeightRequest="42" />
+                                        </VerticalStackLayout>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </RefreshView>
+</ContentPage>

@@ -1,5 +1,6 @@
 using KampusRotaUI.Services;
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.Maui.Storage;
 
 namespace KampusRotaUI.Views;
@@ -54,14 +55,26 @@ public partial class Login : ContentPage
         var loginButton = (Button)sender;
         loginButton.IsEnabled = false;
 
-        string email = EmailEntry?.Text?.Trim();
-        string sifre = PasswordEntry?.Text;
+        var email = EmailEntry.Text?.Trim();
+        var sifre = PasswordEntry.Text;
 
         try
         {
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(sifre))
             {
                 ShowError("Lütfen tüm alanları doldurun.");
+                return;
+            }
+
+            if (!email.Contains('@') || email.Length > 100)
+            {
+                ShowError("Lütfen geçerli bir e-posta adresi girin.");
+                return;
+            }
+
+            if (sifre.Length < 6)
+            {
+                ShowError("Şifre en az 6 karakter olmalıdır.");
                 return;
             }
 
@@ -76,14 +89,15 @@ public partial class Login : ContentPage
             }
 
             // Veriler null gelirse çökmemesi için ?? operatörünü kullanıyoruz
-            string userId = kullanici.Id.ToString();
-            string tamAd = kullanici.TamAd ?? "Kullanıcı";
-            string userEmail = kullanici.Email ?? email;
+            var userId = kullanici.Id.ToString();
+            var tamAd = kullanici.TamAd ?? "Kullanıcı";
+            var userEmail = kullanici.Email ?? email;
 
             Preferences.Default.Set("UserId", userId);
             Preferences.Default.Set("UserFullName", tamAd);
             Preferences.Default.Set("UserEmail", userEmail);
             Preferences.Default.Set("UserGender", kullanici.Cinsiyet);
+            Preferences.Default.Set("UserRating", kullanici.OrtalamaPuan.ToString("0.0", CultureInfo.InvariantCulture));
 
             // Handle Remember Me preference: save or remove credentials
             if (RememberMeCheck.IsChecked)
@@ -108,7 +122,10 @@ public partial class Login : ContentPage
             }
             else
             {
-                Application.Current.MainPage = new AppShell();
+                if (Application.Current is not null)
+                {
+                    Application.Current.MainPage = new AppShell();
+                }
             }
         }
         catch (Exception ex)

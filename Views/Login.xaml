@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="KampusRotaUI.Views.Login"
@@ -7,46 +7,62 @@
              Title="Giriş Yap">
 
     <ScrollView>
-        <VerticalStackLayout Spacing="22" Padding="28,56,28,30">
+        <VerticalStackLayout Spacing="20" Padding="24,54,24,30">
 
-            <!-- Header: remove TranslationY to ensure it's visible on wide/desktop windows -->
-            <VerticalStackLayout Spacing="6"  HorizontalOptions="Center" >
-                <Label Text="KampüsRota" FontSize="36" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center" />
-                <Label Text="Güvenli kampüs yolculuklarına devam et." FontSize="15" TextColor="White" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+            <VerticalStackLayout Spacing="10" HorizontalOptions="Center">
+                <Border BackgroundColor="Transparent" Stroke="Transparent" StrokeShape="RoundRectangle 18" HeightRequest="68" WidthRequest="68">
+                    <Image Source="kampusrota_logo.png" Aspect="AspectFit" />
+                </Border>
+                <Label Text="KampüsRota" FontSize="34" FontAttributes="Bold" TextColor="#1D9DE5" HorizontalOptions="Center" />
+                <Label Text="Üniversite topluluğuna özel güvenli yolculuk." FontSize="14" TextColor="#6B7280" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
             </VerticalStackLayout>
 
-            <!-- Reduced top margin so header remains visible on large screens -->
-            <Border Padding="22"
-                    Stroke="{StaticResource RideLine}"
-                    StrokeThickness="1"
-                    StrokeShape="RoundRectangle 20"
-                    HorizontalOptions="Center"
-                    WidthRequest="360"
-                    Margin="0,80,0,0">
-                <VerticalStackLayout Spacing="16">
+            <Border Padding="20" BackgroundColor="#EAF6FD" Stroke="#BDDDED" StrokeThickness="1" StrokeShape="RoundRectangle 20" Margin="0,18,0,0">
+                <VerticalStackLayout Spacing="15">
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="Hoş geldiniz" FontSize="22" FontAttributes="Bold" TextColor="#111827" />
+                        <Label Text="Bilgilerinizi girerek devam edin." FontSize="12" TextColor="#6B7280" />
+                    </VerticalStackLayout>
 
-                    <Border Stroke="White" StrokeThickness="1" StrokeShape="RoundRectangle 12" Padding="12,0" >
-                        <Entry x:Name="EmailEntry" Placeholder="Üniversite e-postası (.edu.tr)" Keyboard="Email" TextColor="White" />
-                    </Border>
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="E-posta" FontSize="12" FontAttributes="Bold" TextColor="#74777D" />
+                        <Border Stroke="#BDDDED" StrokeThickness="1" StrokeShape="RoundRectangle 14" BackgroundColor="#EAF6FD" Padding="12,0" HeightRequest="52">
+                            <Entry x:Name="EmailEntry" Placeholder="edu.tr uzantılı adresiniz" Keyboard="Email" TextColor="#111827" PlaceholderColor="#9CA3AF" />
+                        </Border>
+                    </VerticalStackLayout>
 
-                    <Border Stroke="White" StrokeThickness="1" StrokeShape="RoundRectangle 12"  Padding="12,0" >
-                        <Entry x:Name="PasswordEntry" Placeholder="Şifre" IsPassword="True" TextColor="White" />
-                    </Border>
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Şifre" FontSize="12" FontAttributes="Bold" TextColor="#74777D" />
+                        <Border Stroke="#BDDDED" StrokeThickness="1" StrokeShape="RoundRectangle 14" BackgroundColor="#EAF6FD" Padding="12,0" HeightRequest="52">
+                            <Entry x:Name="PasswordEntry" Placeholder="Şifre" IsPassword="True" TextColor="#111827" PlaceholderColor="#9CA3AF" />
+                        </Border>
+                    </VerticalStackLayout>
 
-                    <Label x:Name="ErrorLabel" TextColor="#D93025" FontSize="12" IsVisible="False" />
+                    <Label x:Name="ErrorLabel" TextColor="#EF4444" FontSize="12" IsVisible="False" />
 
-                    <HorizontalStackLayout Spacing="1" VerticalOptions="Center">
-                        <CheckBox x:Name="RememberMeCheck" Color="{StaticResource Primary}" />
-                        <Label Text="Beni hatırla" VerticalOptions="Center" TextColor="White" />
+                    <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                        <CheckBox x:Name="RememberMeCheck" Color="#1D9DE5" />
+                        <Label Text="Beni hatırla" VerticalOptions="Center" TextColor="#374151" FontSize="13" />
                     </HorizontalStackLayout>
 
-                    <Button Text="Giriş yap" BackgroundColor="White" TextColor="Black" CornerRadius="24" FontAttributes="Bold" HeightRequest="50" Clicked="OnLoginClicked" />
-
+                    <Button Text="Giriş yap"
+                            BackgroundColor="#1D9DE5"
+                            TextColor="White"
+                            CornerRadius="18"
+                            FontAttributes="Bold"
+                            HeightRequest="54"
+                            Clicked="OnLoginClicked" />
                 </VerticalStackLayout>
             </Border>
 
-            <Button Text="Hesabın yok mu? Kayıt ol" BackgroundColor="Transparent" TextColor="White" FontAttributes="Bold" Clicked="OnRegisterNavClicked" />
+            <Button Text="Hesabın yok mu? Kayıt ol"
+                    BackgroundColor="Transparent"
+                    TextColor="#1D9DE5"
+                    FontAttributes="Bold"
+                    Clicked="OnRegisterNavClicked" />
 
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
+
+

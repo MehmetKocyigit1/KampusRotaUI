@@ -1,5 +1,6 @@
 using KampusRotaUI.Models;
 using KampusRotaUI.Services;
+using System.Net.Mail;
 
 namespace KampusRotaUI.Views;
 
@@ -7,8 +8,7 @@ public partial class RegisterPage : ContentPage
 {
     private readonly ApiServices _apiService = new ApiServices();
 
-    // Seçilen cinsiyet burada tutulacak
-    private string selectedGender = "";
+    private string _selectedGender = "Erkek";
 
     public RegisterPage()
     {
@@ -21,9 +21,9 @@ public partial class RegisterPage : ContentPage
 
     private void ResetGenderBorders()
     {
-        MaleBorder.BackgroundColor = Color.FromArgb("#0A1A4F");
-        FemaleBorder.BackgroundColor = Color.FromArgb("#0A1A4F");
-        UnknownBorder.BackgroundColor = Color.FromArgb("#0A1A4F");
+        MaleBorder.BackgroundColor = Color.FromArgb("#3A4756");
+        FemaleBorder.BackgroundColor = Color.FromArgb("#3A4756");
+        UnknownBorder.BackgroundColor = Color.FromArgb("#3A4756");
     }
 
     private void OnMaleTapped(object sender, TappedEventArgs e)
@@ -32,7 +32,7 @@ public partial class RegisterPage : ContentPage
 
         MaleBorder.BackgroundColor = Color.FromArgb("#FFB300");
 
-        selectedGender = "Erkek";
+        _selectedGender = "Erkek";
     }
 
     private void OnFemaleTapped(object sender, TappedEventArgs e)
@@ -41,7 +41,7 @@ public partial class RegisterPage : ContentPage
 
         FemaleBorder.BackgroundColor = Color.FromArgb("#FFB300");
 
-        selectedGender = "Kadın";
+        _selectedGender = "Kadın";
     }
 
     private void OnUnknownTapped(object sender, TappedEventArgs e)
@@ -50,7 +50,7 @@ public partial class RegisterPage : ContentPage
 
         UnknownBorder.BackgroundColor = Color.FromArgb("#FFB300");
 
-        selectedGender = "Belirtmek İstemiyorum";
+        _selectedGender = "Belirtmek İstemiyorum";
     }
 
     // =========================
@@ -62,15 +62,13 @@ public partial class RegisterPage : ContentPage
         var registerButton = (Button)sender;
         registerButton.IsEnabled = false;
 
-        string ad = NameEntry.Text?.Trim();
-        string soyad = SurnameEntry.Text?.Trim();
-        string ogrenciNo = StudentNoEntry.Text?.Trim();
-        string email = EmailEntry.Text?.Trim();
-        string sifre = PasswordEntry.Text;
-        string sifreTekrar = ConfirmPasswordEntry.Text;
-
-        // Picker kaldırıldığı için artık buradan geliyor
-        string cinsiyet = selectedGender;
+        var ad = NameEntry.Text?.Trim();
+        var soyad = SurnameEntry.Text?.Trim();
+        var ogrenciNo = StudentNoEntry.Text?.Trim();
+        var email = EmailEntry.Text?.Trim();
+        var sifre = PasswordEntry.Text;
+        var sifreTekrar = ConfirmPasswordEntry.Text;
+        var cinsiyet = _selectedGender;
 
         try
         {
@@ -80,6 +78,7 @@ public partial class RegisterPage : ContentPage
 
             if (string.IsNullOrWhiteSpace(ad) ||
                 string.IsNullOrWhiteSpace(soyad) ||
+                string.IsNullOrWhiteSpace(ogrenciNo) ||
                 string.IsNullOrWhiteSpace(email) ||
                 string.IsNullOrWhiteSpace(sifre) ||
                 string.IsNullOrWhiteSpace(cinsiyet))
@@ -92,11 +91,31 @@ public partial class RegisterPage : ContentPage
                 return;
             }
 
+            if (ad.Length < 2 || ad.Length > 40 || soyad.Length < 2 || soyad.Length > 40)
+            {
+                await DisplayAlert(
+                    "Geçersiz Bilgi",
+                    "İsim ve soyisim 2-40 karakter arasında olmalıdır.",
+                    "Tamam");
+
+                return;
+            }
+
+            if (ogrenciNo.Length < 5 || ogrenciNo.Length > 20 || !ogrenciNo.All(char.IsDigit))
+            {
+                await DisplayAlert(
+                    "Öğrenci No",
+                    "Öğrenci numarası 5-20 haneli ve sadece rakamlardan oluşmalıdır.",
+                    "Tamam");
+
+                return;
+            }
+
             // =========================
             // E-POSTA KONTROLÜ
             // =========================
 
-            if (!email.EndsWith(".edu.tr"))
+            if (!IsValidUniversityEmail(email))
             {
                 await DisplayAlert(
                     "Geçersiz E-posta",
@@ -193,5 +212,19 @@ public partial class RegisterPage : ContentPage
     private async void OnLoginNavClicked(object sender, EventArgs e)
     {
         await Navigation.PopAsync();
+    }
+
+    private static bool IsValidUniversityEmail(string email)
+    {
+        try
+        {
+            var address = new MailAddress(email);
+            return address.Address.Equals(email, StringComparison.OrdinalIgnoreCase)
+                && address.Host.EndsWith(".edu.tr", StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

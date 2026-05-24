@@ -1,245 +1,123 @@
-<?xml version="1.0" encoding="utf-8" ?>
-
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="KampusRotaUI.Views.RegisterPage"
-             NavigationPage.HasNavigationBar="False">
+             NavigationPage.HasNavigationBar="False"
+             Background="{StaticResource AppBackgroundBrush}">
 
-    <Grid>
+    <ScrollView>
+        <VerticalStackLayout Padding="24,34,24,30" Spacing="16">
 
-        <!-- ARKA PLAN -->
-
-        <Grid.Background>
-
-            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-
-                <GradientStop Color="#08133A" Offset="0.0"/>
-                <GradientStop Color="#133B8A" Offset="0.55"/>
-                <GradientStop Color="#2B84E8" Offset="1.0"/>
-
-            </LinearGradientBrush>
-
-        </Grid.Background>
-
-        <ScrollView>
-
-            <VerticalStackLayout
-                Padding="35,70,35,40"
-                Spacing="22">
-
-                <!-- BAŞLIK -->
-
-                <VerticalStackLayout Spacing="8">
-
-                    <Label
-                        Text="Kayıt Formu"
-                        FontSize="32"
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                <Button Text="Geri"
+                        Clicked="OnLoginNavClicked"
+                        BackgroundColor="#EAF6FD"
+                        BorderColor="#BDDDED"
+                        BorderWidth="1"
+                        TextColor="#111827"
                         FontAttributes="Bold"
-                        TextColor="White"/>
-
-                    <Label
-                        Text="Kendi KampüsRota Hesabını Oluştur"
-                        FontSize="15"
-                        TextColor="#C7D2FE"/>
-
+                        CornerRadius="16"
+                        Padding="16,0"
+                        HeightRequest="40" />
+                <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                    <Label Text="Hesap oluştur" FontSize="26" FontAttributes="Bold" TextColor="#1D9DE5" />
+                    <Label Text="Kampüs topluluğuna katıl." FontSize="12" TextColor="#6B7280" />
                 </VerticalStackLayout>
+            </Grid>
 
-                <!-- AD -->
+            <Border BackgroundColor="#EAF6FD" Stroke="#BDDDED" StrokeThickness="1" StrokeShape="RoundRectangle 20" Padding="18">
+                <VerticalStackLayout Spacing="14">
 
-                <Border
-                    BackgroundColor="#0A1A4F"
-                    StrokeThickness="0"
-                    StrokeShape="RoundRectangle 18"
-                    Padding="18,4">
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="Ad" FontSize="12" FontAttributes="Bold" TextColor="#74777D" />
+                            <Border BackgroundColor="#EAF6FD" Stroke="#BDDDED" StrokeShape="RoundRectangle 14" Padding="12,0" HeightRequest="50">
+                                <Entry x:Name="NameEntry" Placeholder="İsim" PlaceholderColor="#9CA3AF" TextColor="#111827" />
+                            </Border>
+                        </VerticalStackLayout>
 
-                    <Entry
-                        x:Name="NameEntry"
-                        Placeholder="İsim"
-                        PlaceholderColor="#A5B4FC"
-                        TextColor="White"/>
-                </Border>
+                        <VerticalStackLayout Grid.Column="1" Spacing="6">
+                            <Label Text="Soyad" FontSize="12" FontAttributes="Bold" TextColor="#74777D" />
+                            <Border BackgroundColor="#EAF6FD" Stroke="#BDDDED" StrokeShape="RoundRectangle 14" Padding="12,0" HeightRequest="50">
+                                <Entry x:Name="SurnameEntry" Placeholder="Soyisim" PlaceholderColor="#9CA3AF" TextColor="#111827" />
+                            </Border>
+                        </VerticalStackLayout>
+                    </Grid>
 
-                <!-- SOYAD -->
-
-                <Border
-                    BackgroundColor="#0A1A4F"
-                    StrokeThickness="0"
-                    StrokeShape="RoundRectangle 18"
-                    Padding="18,4">
-
-                    <Entry
-                        x:Name="SurnameEntry"
-                        Placeholder="Soyisim"
-                        PlaceholderColor="#A5B4FC"
-                        TextColor="White"/>
-                </Border>
-
-                <!-- ÖĞRENCİ NO -->
-
-                <Border
-                    BackgroundColor="#0A1A4F"
-                    StrokeThickness="0"
-                    StrokeShape="RoundRectangle 18"
-                    Padding="18,4">
-
-                    <Entry
-                        x:Name="StudentNoEntry"
-                        Placeholder="Öğrenci No"
-                        Keyboard="Numeric"
-                        PlaceholderColor="#A5B4FC"
-                        TextColor="White"/>
-                </Border>
-
-                <!-- EMAIL -->
-
-                <Border
-                    BackgroundColor="#0A1A4F"
-                    StrokeThickness="0"
-                    StrokeShape="RoundRectangle 18"
-                    Padding="18,4">
-
-                    <Entry
-                        x:Name="EmailEntry"
-                        Placeholder="Universite E-mail"
-                        Keyboard="Email"
-                        PlaceholderColor="#A5B4FC"
-                        TextColor="White"/>
-                </Border>
-
-                <!-- CİNSİYET -->
-
-                <VerticalStackLayout Spacing="12">
-
-                    <Label
-                        Text="Cinsiyet"
-                        FontSize="16"
-                        TextColor="White"
-                        FontAttributes="Bold"/>
-
-                    <HorizontalStackLayout Spacing="14">
-
-                        <!-- MALE -->
-
-                        <Border
-                            x:Name="MaleBorder"
-                            BackgroundColor="#FFB300"
-                            StrokeThickness="0"
-                            StrokeShape="RoundRectangle 14"
-                            Padding="20,12">
-
-                            <Label
-                                Text="Erkek"
-                                TextColor="White"
-                                FontAttributes="Bold"/>
-
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnMaleTapped"/>
-                            </Border.GestureRecognizers>
-
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Öğrenci numarası" FontSize="12" FontAttributes="Bold" TextColor="#74777D" />
+                        <Border BackgroundColor="#EAF6FD" Stroke="#BDDDED" StrokeShape="RoundRectangle 14" Padding="12,0" HeightRequest="50">
+                            <Entry x:Name="StudentNoEntry" Placeholder="20XXXXXXXXX" Keyboard="Numeric" PlaceholderColor="#9CA3AF" TextColor="#111827" />
                         </Border>
+                    </VerticalStackLayout>
 
-                        <!-- FEMALE -->
-
-                        <Border
-                            x:Name="FemaleBorder"
-                            BackgroundColor="#0A1A4F"
-                            StrokeThickness="0"
-                            StrokeShape="RoundRectangle 14"
-                            Padding="20,12">
-
-                            <Label
-                                Text="Kadın"
-                                TextColor="White"
-                                FontAttributes="Bold"/>
-
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnFemaleTapped"/>
-                            </Border.GestureRecognizers>
-
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Üniversite e-postası" FontSize="12" FontAttributes="Bold" TextColor="#74777D" />
+                        <Border BackgroundColor="#EAF6FD" Stroke="#BDDDED" StrokeShape="RoundRectangle 14" Padding="12,0" HeightRequest="50">
+                            <Entry x:Name="EmailEntry" Placeholder="isim@universite.edu.tr" Keyboard="Email" PlaceholderColor="#9CA3AF" TextColor="#111827" />
                         </Border>
+                    </VerticalStackLayout>
 
-                        <!-- OTHER -->
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Cinsiyet seçimi" FontSize="12" FontAttributes="Bold" TextColor="#74777D" />
+                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                            <Border x:Name="MaleBorder" BackgroundColor="#FFB300" StrokeThickness="0" StrokeShape="RoundRectangle 14" Padding="12,10">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnMaleTapped" />
+                                </Border.GestureRecognizers>
+                                <Label Text="Erkek" TextColor="White" FontAttributes="Bold" HorizontalOptions="Center" FontSize="12" />
+                            </Border>
 
-                        <Border
-                            x:Name="UnknownBorder"
-                            BackgroundColor="#0A1A4F"
-                            StrokeThickness="0"
-                            StrokeShape="RoundRectangle 14"
-                            Padding="20,12">
+                            <Border x:Name="FemaleBorder" Grid.Column="1" BackgroundColor="#0F3F35" StrokeThickness="0" StrokeShape="RoundRectangle 14" Padding="12,10">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnFemaleTapped" />
+                                </Border.GestureRecognizers>
+                                <Label Text="Kadın" TextColor="White" FontAttributes="Bold" HorizontalOptions="Center" FontSize="12" />
+                            </Border>
 
-                            <Label
-                                Text="Diğer"
-                                TextColor="White"
-                                FontAttributes="Bold"/>
+                            <Border x:Name="UnknownBorder" Grid.Column="2" BackgroundColor="#0F3F35" StrokeThickness="0" StrokeShape="RoundRectangle 14" Padding="12,10">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnUnknownTapped" />
+                                </Border.GestureRecognizers>
+                                <Label Text="Gösterme" TextColor="White" FontAttributes="Bold" HorizontalOptions="Center" FontSize="12" />
+                            </Border>
+                        </Grid>
+                    </VerticalStackLayout>
 
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnUnknownTapped"/>
-                            </Border.GestureRecognizers>
-
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Şifre" FontSize="12" FontAttributes="Bold" TextColor="#74777D" />
+                        <Border BackgroundColor="#EAF6FD" Stroke="#BDDDED" StrokeShape="RoundRectangle 14" Padding="12,0" HeightRequest="50">
+                            <Entry x:Name="PasswordEntry" Placeholder="Şifre" IsPassword="True" PlaceholderColor="#9CA3AF" TextColor="#111827" />
                         </Border>
+                    </VerticalStackLayout>
 
-                    </HorizontalStackLayout>
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Şifre tekrar" FontSize="12" FontAttributes="Bold" TextColor="#74777D" />
+                        <Border BackgroundColor="#EAF6FD" Stroke="#BDDDED" StrokeShape="RoundRectangle 14" Padding="12,0" HeightRequest="50">
+                            <Entry x:Name="ConfirmPasswordEntry" Placeholder="Şifreyi doğrula" IsPassword="True" PlaceholderColor="#9CA3AF" TextColor="#111827" />
+                        </Border>
+                    </VerticalStackLayout>
 
+                    <Button Text="Hesap oluştur"
+                            HeightRequest="54"
+                            CornerRadius="18"
+                            FontSize="16"
+                            FontAttributes="Bold"
+                            BackgroundColor="#1D9DE5"
+                            TextColor="White"
+                            Margin="0,8,0,0"
+                            Clicked="OnRegisterClicked" />
                 </VerticalStackLayout>
+            </Border>
 
-                <!-- ŞİFRE -->
-
-                <Border
-                    BackgroundColor="#0A1A4F"
-                    StrokeThickness="0"
-                    StrokeShape="RoundRectangle 18"
-                    Padding="18,4">
-
-                    <Entry
-                        x:Name="PasswordEntry"
-                        Placeholder="Şifre"
-                        IsPassword="True"
-                        PlaceholderColor="#A5B4FC"
-                        TextColor="White"/>
-                </Border>
-
-                <!-- ŞİFRE TEKRAR -->
-
-                <Border
-                    BackgroundColor="#0A1A4F"
-                    StrokeThickness="0"
-                    StrokeShape="RoundRectangle 18"
-                    Padding="18,4">
-
-                    <Entry
-                        x:Name="ConfirmPasswordEntry"
-                        Placeholder="Şifreyi Doğrula"
-                        IsPassword="True"
-                        PlaceholderColor="#A5B4FC"
-                        TextColor="White"/>
-                </Border>
-
-                <!-- BUTTON -->
-
-                <Button
-                    Text="Hesap Oluştur"
-                    HeightRequest="60"
-                    CornerRadius="18"
-                    FontSize="18"
-                    FontAttributes="Bold"
-                    BackgroundColor="White"
-                    TextColor="Black"
-                    Margin="0,20,0,0"
-                    Clicked="OnRegisterClicked"/>
-
-                <!-- LOGIN -->
-
-                <Button
-                    Text="Zaten hesabın var mı? Giriş yap!"
+            <Button Text="Zaten hesabın var mı? Giriş yap"
                     BackgroundColor="Transparent"
-                    TextColor="White"
+                    TextColor="#1D9DE5"
                     FontAttributes="Bold"
-                    Clicked="OnLoginNavClicked"/>
+                    Clicked="OnLoginNavClicked" />
 
-            </VerticalStackLayout>
-
-        </ScrollView>
-
-    </Grid>
-
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>
+
+

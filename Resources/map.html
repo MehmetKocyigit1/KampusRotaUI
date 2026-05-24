@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kampüs Haritası</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f5f5f5;
+            overflow: hidden;
+        }
+
+        #map {
+            width: 100%;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        .map-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .info-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-height: 25%;
+            overflow-y: auto;
+            z-index: 1000;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .info-panel.active {
+            transform: translateY(0);
+        }
+
+        .info-panel h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .info-panel p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .btn-select {
+            background-color: #007AFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            width: 100%;
+        }
+
+        .btn-select:hover {
+            background-color: #0051D5;
+        }
+
+        .btn-select:active {
+            transform: scale(0.98);
+        }
+
+        .location-description {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 10px;
+        }
+
+        .leaflet-popup-content-wrapper {
+            background-color: white !important;
+            border-radius: 8px !important;
+        }
+
+        .leaflet-popup-tip {
+            background-color: white !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="map-container">
+        <div id="map"></div>
+        <div class="info-panel" id="infoPanel">
+            <h3 id="locationName">Lokasyon</h3>
+            <p id="locationDesc" class="location-description"></p>
+            <button class="btn-select" onclick="selectLocation()">Bunu Seç</button>
+        </div>
+    </div>
+
+    <script>
+        // Map initialization
+        const map = L.map('map').setView([39.9, 32.8], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Campus locations with coordinates
+        const locations = [
+            {
+                name: 'Iyaş',
+                lat: 39.8950,
+                lng: 32.7850,
+                description: 'Ankara, Iyas Yerleşkesi'
+            },
+            {
+                name: 'Doğu Kampüsü',
+                lat: 39.9050,
+                lng: 32.8150,
+                description: 'Ankara Üniversitesi Doğu Kampüsü'
+            },
+            {
+                name: 'Batı Kampüsü',
+                lat: 39.9100,
+                lng: 32.7950,
+                description: 'Ankara Üniversitesi Batı Kampüsü'
+            },
+            {
+                name: '100. Yıl Yerleşkesi',
+                lat: 39.9200,
+                lng: 32.8050,
+                description: 'Ankara Üniversitesi 100. Yıl Yerleşkesi'
+            },
+            {
+                name: 'Erkek Yurdu',
+                lat: 39.8900,
+                lng: 32.8100,
+                description: 'Erkek Öğrenci Yurdu'
+            },
+            {
+                name: 'MihriHatun Kız Yurdu',
+                lat: 39.8850,
+                lng: 32.8050,
+                description: 'Mihri Hatun Kız Öğrenci Yurdu'
+            },
+            {
+                name: 'Şehir Merkezi (Meydan)',
+                lat: 39.9300,
+                lng: 32.8550,
+                description: 'Ankara Şehir Merkezi'
+            },
+            {
+                name: 'Otogar',
+                lat: 39.9400,
+                lng: 32.8700,
+                description: 'Ankara Otogar'
+            }
+        ];
+
+        let selectedLocation = null;
+
+        // Add markers for each location
+        locations.forEach(location => {
+            const marker = L.marker([location.lat, location.lng], {
+                title: location.name
+            }).addTo(map);
+
+            // Create a custom icon (fallback simple marker)
+            // marker.setIcon(L.icon({ /* custom icon if needed */ }));
+
+            // Add click event
+            marker.on('click', function() {
+                selectedLocation = location;
+                showInfoPanel(location);
+            });
+        });
+
+        // Show info panel
+        function showInfoPanel(location) {
+            document.getElementById('locationName').textContent = location.name;
+            document.getElementById('locationDesc').textContent = location.description;
+            const panel = document.getElementById('infoPanel');
+            panel.classList.add('active');
+        }
+
+        // Select location and send to app
+        function selectLocation() {
+            if (selectedLocation) {
+                const message = {
+                    type: 'locationSelected',
+                    location: selectedLocation.name,
+                    latitude: selectedLocation.lat,
+                    longitude: selectedLocation.lng
+                };
+
+                // Try to post to native bridges first
+                if (typeof window.interop !== 'undefined' && typeof window.interop.selectLocation === 'function') {
+                    try { window.interop.selectLocation(JSON.stringify(message)); return; } catch(e) { }
+                }
+
+                if (typeof webkit !== 'undefined' && webkit.messageHandlers && webkit.messageHandlers.locationSelected) {
+                    try { webkit.messageHandlers.locationSelected.postMessage(message); return; } catch(e) { }
+                }
+
+                if (typeof Android !== 'undefined' && typeof Android.selectLocation === 'function') {
+                    try { Android.selectLocation(JSON.stringify(message)); return; } catch(e) { }
+                }
+
+                // Fallback: navigate to a special URL the app can intercept
+                try {
+                    var encoded = encodeURIComponent(JSON.stringify(message));
+                    window.location.href = 'app://locationSelected?data=' + encoded;
+                } catch (ex) {
+                    console.log('Selected Location:', selectedLocation.name);
+                }
+
+                // Close panel after selection
+                const panel = document.getElementById('infoPanel');
+                panel.classList.remove('active');
+            }
+        }
+
+        // Close panel when clicking outside
+        map.on('click', function() {
+            const panel = document.getElementById('infoPanel');
+            panel.classList.remove('active');
+        });
+    </script>
+</body>
+</html>

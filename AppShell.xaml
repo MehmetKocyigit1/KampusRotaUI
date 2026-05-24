@@ -1,14 +1,14 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <Shell
     x:Class="KampusRotaUI.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:views="clr-namespace:KampusRotaUI.Views"
     Shell.FlyoutBehavior="Disabled"
-    Shell.BackgroundColor="{StaticResource White}"
+    Shell.BackgroundColor="{StaticResource RideSurface}"
     Shell.ForegroundColor="{StaticResource Tertiary}"
     Shell.TitleColor="{StaticResource Tertiary}"
-    Shell.TabBarBackgroundColor="{StaticResource White}"
+    Shell.TabBarBackgroundColor="{StaticResource RideSurface}"
     Shell.TabBarForegroundColor="{StaticResource Primary}"
     Shell.TabBarTitleColor="{StaticResource Primary}"
     Shell.TabBarUnselectedColor="{StaticResource RideMuted}">
@@ -39,12 +39,12 @@
                 Route="MapPage" />
         </Tab>
 
-        <!-- 4. Sekme: Şifre Değiştirme -->
-        <Tab Title="Güvenlik" Icon="lock_icon.png">
+        <!-- 4. Sekme: Yolculuk talepleri, onaylar ve puanlama -->
+        <Tab Title="Yolculuklarım" Icon="ride_icon.png">
             <ShellContent
-                Title="Şifre Değiştir"
-                ContentTemplate="{DataTemplate views:ChangePasswordPage}"
-                Route="ChangePasswordPage" />
+                Title="Yolculuklarım"
+                ContentTemplate="{DataTemplate views:MyRidesPage}"
+                Route="MyRidesPage" />
         </Tab>
 
         <!-- 5. Sekme: Profil -->
@@ -57,3 +57,4 @@
     </TabBar>
 
 </Shell>
+

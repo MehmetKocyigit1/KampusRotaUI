@@ -17,9 +17,9 @@ public partial class ChangePasswordPage : ContentPage
     {
         MessageLabel.IsVisible = false;
 
-        string oldPass = OldPasswordEntry.Text;
-        string newPass = NewPasswordEntry.Text;
-        string confirmPass = ConfirmPasswordEntry.Text;
+        var oldPass = OldPasswordEntry.Text;
+        var newPass = NewPasswordEntry.Text;
+        var confirmPass = ConfirmPasswordEntry.Text;
 
         // 1. Boş alan kontrolü
         if (string.IsNullOrWhiteSpace(oldPass) || string.IsNullOrWhiteSpace(newPass) || string.IsNullOrWhiteSpace(confirmPass))
@@ -35,6 +35,12 @@ public partial class ChangePasswordPage : ContentPage
             return;
         }
 
+        if (newPass == oldPass)
+        {
+            ShowMessage("Yeni şifre mevcut şifreden farklı olmalıdır.", Colors.Red);
+            return;
+        }
+
         // 3. Şifre eşleşme kontrolü
         if (newPass != confirmPass)
         {
@@ -43,9 +49,7 @@ public partial class ChangePasswordPage : ContentPage
         }
 
         // 4. Giriş yapan kullanıcının ID'sini Preferences'tan (Cihaz Hafızasından) alıyoruz
-        int userId = Preferences.Default.Get("UserId", 0);
-
-        if (userId == 0)
+        if (!TryGetCurrentUserId(out var userId))
         {
             ShowMessage("Oturum hatası. Lütfen uygulamaya tekrar giriş yapın.", Colors.Red);
             return;
@@ -104,5 +108,22 @@ public partial class ChangePasswordPage : ContentPage
         MessageLabel.Text = message;
         MessageLabel.TextColor = color;
         MessageLabel.IsVisible = true;
+    }
+
+    private async void OnBackClicked(object sender, EventArgs e)
+    {
+        if (Shell.Current is not null)
+        {
+            await Shell.Current.GoToAsync("//ProfilePage");
+            return;
+        }
+
+        await Navigation.PopAsync();
+    }
+
+    private static bool TryGetCurrentUserId(out int userId)
+    {
+        var userIdText = Preferences.Default.Get("UserId", "0");
+        return int.TryParse(userIdText, out userId) && userId > 0;
     }
 }

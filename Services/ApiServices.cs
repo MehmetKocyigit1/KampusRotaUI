@@ -113,6 +113,33 @@ public class ApiServices
         }
     }
 
+    public async Task<bool> KullaniciSilAsync(int kullaniciId)
+    {
+        try
+        {
+            var response = await _httpClient.DeleteAsync($"api/users/{kullaniciId}");
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine("HESAP SİLME HATASI: " + ex.Message);
+            return false;
+        }
+    }
+
+    public async Task<Kullanici?> KullaniciGetirAsync(int kullaniciId)
+    {
+        try
+        {
+            return await _httpClient.GetFromJsonAsync<Kullanici>($"api/users/{kullaniciId}");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine("KULLANICI GETİRME HATASI: " + ex.Message);
+            return null;
+        }
+    }
+
     // --- 2. YOLCULUK İŞLEMLERİ ---
 
     public async Task<bool> YolculukEkleAsync(Yolculuk yeniYolculuk, int kullaniciId)
@@ -126,6 +153,21 @@ public class ApiServices
         catch (Exception ex)
         {
             Debug.WriteLine("YOLCULUK EKLEME HATASI: " + ex.Message);
+            return false;
+        }
+    }
+
+    public async Task<bool> YolculukGuncelleAsync(int yolculukId, Yolculuk guncelYolculuk, int kullaniciId)
+    {
+        try
+        {
+            var url = $"api/rides/{yolculukId}?kullaniciId={kullaniciId}";
+            var response = await _httpClient.PutAsJsonAsync(url, guncelYolculuk);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine("YOLCULUK GÜNCELLEME HATASI: " + ex.Message);
             return false;
         }
     }
@@ -158,6 +200,88 @@ public class ApiServices
         }
     }
 
-  
-    
+    public async Task<bool> KatilmaTalebiGonderAsync(int yolculukId, int yolcuId, string mesaj = "")
+    {
+        try
+        {
+            var talep = new YolculukTalebi { TalepMesaji = mesaj };
+            var response = await _httpClient.PostAsJsonAsync($"api/rides/{yolculukId}/requests?yolcuId={yolcuId}", talep);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine("TALEP GÖNDERME HATASI: " + ex.Message);
+            return false;
+        }
+    }
+
+    public async Task<List<YolculukTalebi>> SurucuTalepleriniGetirAsync(int surucuId)
+    {
+        try
+        {
+            return await _httpClient.GetFromJsonAsync<List<YolculukTalebi>>($"api/rides/requests/driver/{surucuId}") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine("SÜRÜCÜ TALEPLERİ HATASI: " + ex.Message);
+            return new();
+        }
+    }
+
+    public async Task<List<YolculukTalebi>> YolcuTalepleriniGetirAsync(int yolcuId)
+    {
+        try
+        {
+            return await _httpClient.GetFromJsonAsync<List<YolculukTalebi>>($"api/rides/requests/passenger/{yolcuId}") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine("YOLCU TALEPLERİ HATASI: " + ex.Message);
+            return new();
+        }
+    }
+
+    public async Task<bool> TalepDurumuGuncelleAsync(int talepId, int surucuId, bool onaylandi, string not = "")
+    {
+        try
+        {
+            var url = $"api/rides/requests/{talepId}/status?surucuId={surucuId}&onaylandi={onaylandi}&not={Uri.EscapeDataString(not)}";
+            var response = await _httpClient.PutAsync(url, null);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine("TALEP DURUM HATASI: " + ex.Message);
+            return false;
+        }
+    }
+
+    public async Task<bool> YolculukYorumuEkleAsync(int yolculukId, int yorumYapanKullaniciId, int puanlananKullaniciId, int puan, string yorum)
+    {
+        try
+        {
+            var yeniYorum = new YolculukYorumu { Puan = puan, Yorum = yorum };
+            var url = $"api/rides/{yolculukId}/reviews?yorumYapanKullaniciId={yorumYapanKullaniciId}&puanlananKullaniciId={puanlananKullaniciId}";
+            var response = await _httpClient.PostAsJsonAsync(url, yeniYorum);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine("YORUM EKLEME HATASI: " + ex.Message);
+            return false;
+        }
+    }
+
+    public async Task<List<YolculukYorumu>> YolculukYorumlariniGetirAsync(int yolculukId)
+    {
+        try
+        {
+            return await _httpClient.GetFromJsonAsync<List<YolculukYorumu>>($"api/rides/{yolculukId}/reviews") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine("YORUM LİSTELEME HATASI: " + ex.Message);
+            return new();
+        }
+    }
 }

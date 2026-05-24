@@ -1,7 +1,4 @@
-using System.Text;
 using System.Globalization;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Storage;
 
 namespace KampusRotaUI.Views;
 
@@ -11,23 +8,23 @@ public partial class MapPage : ContentPage
     {
         InitializeComponent();
 
-        // Load HTML and start location updates on the UI thread
-        Device.BeginInvokeOnMainThread(async () =>
+        Dispatcher.Dispatch(async () =>
         {
-            await LoadMapHtmlAsync();
-            await WaitForMapReadyAsync(TimeSpan.FromSeconds(8));
-            StartLocationUpdates();
-
-            // No automatic sample route drawing to avoid default blue line
-            // If you want to draw a route, call drawRoute from C# with real data or via JS manually.
+            await InitializeMapAsync();
         });
 
-        // Poll JS console logs every 1.5s
-        Device.StartTimer(TimeSpan.FromSeconds(1.5), () =>
+        Dispatcher.StartTimer(TimeSpan.FromSeconds(1.5), () =>
         {
             _ = FetchJsLogs();
             return true;
         });
+    }
+
+    private async Task InitializeMapAsync()
+    {
+        await LoadMapHtmlAsync();
+        await WaitForMapReadyAsync(TimeSpan.FromSeconds(8));
+        StartLocationUpdates();
     }
 
     private async Task LoadMapHtmlAsync()
@@ -118,7 +115,7 @@ public partial class MapPage : ContentPage
                 var lat = location.Latitude.ToString(CultureInfo.InvariantCulture);
                 var lng = location.Longitude.ToString(CultureInfo.InvariantCulture);
                 var js = $"setUserLocation({lat},{lng});";
-                try { await MapWebView.EvaluateJavaScriptAsync(js); } catch (Exception ex) { JsLogLabel.Text = "JS setUserLocation error"; }
+                try { await MapWebView.EvaluateJavaScriptAsync(js); } catch { JsLogLabel.Text = "JS setUserLocation error"; }
             }
         }
         catch (Exception ex)

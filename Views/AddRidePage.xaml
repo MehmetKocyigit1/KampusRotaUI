@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="KampusRotaUI.Views.AddRidePage"
@@ -6,102 +6,146 @@
              NavigationPage.HasNavigationBar="False"
              Background="{StaticResource AppBackgroundBrush}">
 
-    <ScrollView>
-        <VerticalStackLayout Spacing="18" Padding="20,18,20,28">
+    <Grid RowDefinitions="*" x:Name="MainGrid">
 
-            <VerticalStackLayout Spacing="4">
-                <Label Text="Yolculuk yayınla" FontAttributes="Bold" FontSize="28" TextColor="White" />
-                <Label Text="Güzergahı ve koltuk detaylarını net yaz, doğru yolcular seni bulsun." FontSize="13" TextColor="White" />
-            </VerticalStackLayout>
+        <ScrollView x:Name="FormView" Grid.Row="0" IsVisible="True">
+            <VerticalStackLayout Spacing="16" Padding="18,20,18,28">
 
-            <Border Padding="20"   Stroke="White" StrokeThickness="1" StrokeShape="RoundRectangle 20">
-                <VerticalStackLayout Spacing="16">
-
-                    <Label Text="Rota bilgileri" FontAttributes="Bold" FontSize="18" TextColor="White"/>
-
-                    <Border Stroke="White" StrokeThickness="1" StrokeShape="RoundRectangle 12" BackgroundColor="#FBFEFE" Padding="12,0">
-                        <Picker x:Name="DeparturePicker" Title="Kalkış noktası seçin" TitleColor="#777" TextColor="#2C3E50">
-                            <Picker.Items>
-                                <x:String>Iyaş</x:String>
-                                <x:String>Doğu Kampüsü</x:String>
-                                <x:String>Batı Kampüsü</x:String>
-                                <x:String>100. Yıl Yerleşkesi</x:String>
-                                <x:String>Erkek Yurdu</x:String>
-                                <x:String>MihriHatun Kız Yurdu</x:String>
-                                <x:String>Şehir Merkezi (Meydan)</x:String>
-                                <x:String>Otogar</x:String>
-                            </Picker.Items>
-                        </Picker>
+                <Grid ColumnDefinitions="44,*" ColumnSpacing="12">
+                    <Border BackgroundColor="#1D9DE5" Stroke="Transparent" StrokeShape="RoundRectangle 14" HeightRequest="42" WidthRequest="42">
+                        <Label Text="+" TextColor="#D6EEFB" FontSize="24" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
                     </Border>
+                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                        <Label Text="Yolculuk ilanı ver" FontSize="25" FontAttributes="Bold" TextColor="#1D9DE5" />
+                        <Label Text="Kampüs arkadaşlarınla yolculuğunu paylaş." FontSize="12" TextColor="#6B7280" />
+                    </VerticalStackLayout>
+                </Grid>
 
-                    <Border Stroke="White" StrokeThickness="1" StrokeShape="RoundRectangle 12" BackgroundColor="#FBFEFE" Padding="12,0">
-                        <Picker x:Name="DestinationPicker" Title="Varış noktası seçin" TitleColor="#777" TextColor="#2C3E50">
-                            <Picker.Items>
-                                <x:String>Iyaş</x:String>
-                                <x:String>Doğu Kampüsü</x:String>
-                                <x:String>Batı Kampüsü</x:String>
-                                <x:String>100. Yıl Yerleşkesi</x:String>
-                                <x:String>Erkek Yurdu</x:String>
-                                <x:String>MihriHatun Kız Yurdu</x:String>
-                                <x:String>Şehir Merkezi (Meydan)</x:String>
-                                <x:String>Otogar</x:String>
-                            </Picker.Items>
-                        </Picker>
-                    </Border>
+                <Border BackgroundColor="#EAF6FD" Stroke="#BDDDED" StrokeThickness="1" StrokeShape="RoundRectangle 18" Padding="16">
+                    <VerticalStackLayout Spacing="14">
 
-                    <Label Text="Zaman ve detaylar" FontAttributes="Bold" FontSize="18" TextColor="White" Margin="0,10,0,0" />
+                        <Label Text="Rota bilgileri" FontSize="12" FontAttributes="Bold" TextColor="#74777D" />
 
-                    <Grid RowDefinitions="Auto, Auto" ColumnDefinitions="*, *" ColumnSpacing="10" RowSpacing="5">
-                        <Label Grid.Row="0" Grid.Column="0" Text="Tarih" FontAttributes="Bold" FontSize="13" TextColor="#777" />
-                        <Label Grid.Row="0" Grid.Column="1" Text="Saat" FontAttributes="Bold" FontSize="13" TextColor="#777" />
-
-                        <Border Grid.Row="1" Grid.Column="0" Stroke="White" StrokeThickness="1" StrokeShape="RoundRectangle 12" BackgroundColor="#FBFEFE" Padding="12,0">
-                            <DatePicker x:Name="RideDatePicker" Format="dd/MM/yyyy" TextColor="#2C3E50" HeightRequest="45"/>
-                        </Border>
-
-                        <Border Grid.Row="1" Grid.Column="1" Stroke="White" StrokeThickness="1" StrokeShape="RoundRectangle 12" BackgroundColor="#FBFEFE" Padding="12,0">
-                            <Grid ColumnDefinitions="Auto, *" VerticalOptions="Center">
-                                <Label Text="🕒" FontSize="18" VerticalOptions="Center" HorizontalOptions="Center" Margin="0,0,-70,0" />
-                                <TimePicker x:Name="RideTimePicker" Format="HH:mm" TextColor="#2C3E50" HeightRequest="45" BackgroundColor="Transparent" HorizontalOptions="Fill" />
+                        <Border Stroke="#BDDDED" StrokeThickness="1" StrokeShape="RoundRectangle 14" BackgroundColor="#EAF6FD" Padding="12,0" HeightRequest="52">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnDepartureLocationTapped" />
+                            </Border.GestureRecognizers>
+                            <Grid VerticalOptions="Center">
+                                <Label x:Name="DepartureLocationLabel" Text="Kalkış noktası seçin" FontSize="14" TextColor="#6B7280" VerticalOptions="Center" LineBreakMode="TailTruncation" />
+                                <Picker x:Name="DeparturePicker" IsVisible="False">
+                                    <Picker.Items>
+                                        <x:String>Iyaş</x:String>
+                                        <x:String>Doğu Kampüsü</x:String>
+                                        <x:String>Batı Kampüsü</x:String>
+                                        <x:String>100. Yıl Yerleşkesi</x:String>
+                                        <x:String>Erkek Yurdu</x:String>
+                                        <x:String>MihriHatun Kız Yurdu</x:String>
+                                        <x:String>Şehir Merkezi (Meydan)</x:String>
+                                        <x:String>Otogar</x:String>
+                                    </Picker.Items>
+                                </Picker>
                             </Grid>
                         </Border>
-                    </Grid>
 
-                    <!-- Koltuk ve Ücret (Yan Yana Grid Tasarımı) -->
-                    <Grid RowDefinitions="Auto" ColumnDefinitions="*, *" ColumnSpacing="10" Margin="0,5,0,0">
-                        <Border Grid.Column="0" Stroke="White" StrokeThickness="1" StrokeShape="RoundRectangle 12" BackgroundColor="#FBFEFE" Padding="12,0">
-                            <Entry x:Name="SeatsEntry" Placeholder="Koltuk sayısı" Keyboard="Numeric" TextColor="Black" PlaceholderColor="Gray"/>
+                        <Border Stroke="#BDDDED" StrokeThickness="1" StrokeShape="RoundRectangle 14" BackgroundColor="#EAF6FD" Padding="12,0" HeightRequest="52">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnDestinationLocationTapped" />
+                            </Border.GestureRecognizers>
+                            <Grid VerticalOptions="Center">
+                                <Label x:Name="DestinationLocationLabel" Text="Varış noktası seçin" FontSize="14" TextColor="#6B7280" VerticalOptions="Center" LineBreakMode="TailTruncation" />
+                                <Picker x:Name="DestinationPicker" IsVisible="False">
+                                    <Picker.Items>
+                                        <x:String>Iyaş</x:String>
+                                        <x:String>Doğu Kampüsü</x:String>
+                                        <x:String>Batı Kampüsü</x:String>
+                                        <x:String>100. Yıl Yerleşkesi</x:String>
+                                        <x:String>Erkek Yurdu</x:String>
+                                        <x:String>MihriHatun Kız Yurdu</x:String>
+                                        <x:String>Şehir Merkezi (Meydan)</x:String>
+                                        <x:String>Otogar</x:String>
+                                    </Picker.Items>
+                                </Picker>
+                            </Grid>
                         </Border>
 
-                        <Border Grid.Column="1" Stroke="White" StrokeThickness="1" StrokeShape="RoundRectangle 12" BackgroundColor="#FBFEFE" Padding="12,0">
-                            <Entry x:Name="PriceEntry" Placeholder="Ücret (opsiyonel)" Keyboard="Numeric" TextColor="Black" PlaceholderColor="Gray"/>
+                        <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,*" ColumnSpacing="10" RowSpacing="6">
+                            <Label Text="Tarih" FontSize="12" FontAttributes="Bold" TextColor="#74777D" />
+                            <Label Grid.Column="1" Text="Saat" FontSize="12" FontAttributes="Bold" TextColor="#74777D" />
+
+                            <Border Grid.Row="1" Stroke="#BDDDED" StrokeThickness="1" StrokeShape="RoundRectangle 14" BackgroundColor="#EAF6FD" Padding="12,0" HeightRequest="52">
+                                <DatePicker x:Name="RideDatePicker" Format="dd/MM/yyyy" TextColor="#111827" />
+                            </Border>
+                            <Border Grid.Row="1" Grid.Column="1" Stroke="#BDDDED" StrokeThickness="1" StrokeShape="RoundRectangle 14" BackgroundColor="#EAF6FD" Padding="12,0" HeightRequest="52">
+                                <TimePicker x:Name="RideTimePicker" Format="HH:mm" TextColor="#111827" BackgroundColor="Transparent" />
+                            </Border>
+                        </Grid>
+
+                        <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,*" ColumnSpacing="10" RowSpacing="6">
+                            <Label Text="Ücret" FontSize="12" FontAttributes="Bold" TextColor="#74777D" />
+                            <Label Grid.Column="1" Text="Koltuk" FontSize="12" FontAttributes="Bold" TextColor="#74777D" />
+
+                            <Border Grid.Row="1" Stroke="#BDDDED" StrokeThickness="1" StrokeShape="RoundRectangle 14" BackgroundColor="#EAF6FD" Padding="12,0" HeightRequest="52">
+                                <Entry x:Name="PriceEntry" Placeholder="0 TL" Keyboard="Numeric" TextColor="#111827" PlaceholderColor="#9CA3AF" />
+                            </Border>
+                            <Border Grid.Row="1" Grid.Column="1" Stroke="#BDDDED" StrokeThickness="1" StrokeShape="RoundRectangle 14" BackgroundColor="#EAF6FD" Padding="12,0" HeightRequest="52">
+                                <Entry x:Name="SeatsEntry" Placeholder="1-6" Keyboard="Numeric" TextColor="#111827" PlaceholderColor="#9CA3AF" />
+                            </Border>
+                        </Grid>
+
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="Açıklama / Kurallar" FontSize="12" FontAttributes="Bold" TextColor="#74777D" />
+                            <Border Stroke="#BDDDED" StrokeThickness="1" StrokeShape="RoundRectangle 14" BackgroundColor="#EAF6FD" Padding="12,8">
+                                <Editor x:Name="DescriptionEditor" Placeholder="Buluşma noktası, bagaj, notlar..." HeightRequest="90" TextColor="#111827" PlaceholderColor="#9CA3AF" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <Border BackgroundColor="#EAF6FD" Stroke="#BDDDED" StrokeShape="RoundRectangle 14" Padding="12">
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                                <CheckBox x:Name="WomenOnlyCheckBox" Color="#1D9DE5" VerticalOptions="Center" />
+                                <VerticalStackLayout Grid.Column="1" Spacing="1">
+                                    <Label Text="Sadece kadınlar" FontSize="13" FontAttributes="Bold" TextColor="#111827" />
+                                    <Label Text="İlanı kadın yolcular için görünür yap." FontSize="11" TextColor="#6B7280" />
+                                </VerticalStackLayout>
+                            </Grid>
                         </Border>
-                    </Grid>
 
-                    <!-- Açıklama Alanı (Editor ile çok satırlı giriş) -->
-                    <Border Stroke="White" StrokeThickness="1" StrokeShape="RoundRectangle 12" BackgroundColor="#FBFEFE" Margin="0,5,0,0" Padding="12,6">
-                        <Editor x:Name="DescriptionEditor" Placeholder="Açıklama: buluşma noktası, bagaj, notlar..." HeightRequest="82" TextColor="Black" PlaceholderColor="Gray" />
-                    </Border>
+                        <Border BackgroundColor="#EAF6FD" Stroke="#BDDDED" StrokeShape="RoundRectangle 14" Padding="12">
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                                <CheckBox x:Name="TermsCheckBox" Color="#1D9DE5" VerticalOptions="Center" />
+                                <Label Grid.Column="1" Text="Kampüs kurallarına uymayı kabul ediyorum." FontSize="12" TextColor="#374151" VerticalOptions="Center" />
+                            </Grid>
+                        </Border>
 
-                    <!-- Kadınlara Özel Filtresi -->
-                    <HorizontalStackLayout Spacing="10" Margin="0,5,0,0">
-                        <CheckBox x:Name="WomenOnlyCheckBox" Color="White" />
-                        <Label Text="Sadece kadınlar" VerticalOptions="Center" FontSize="14" TextColor="White" FontAttributes="Bold" TranslationX="-15"/>
-                    </HorizontalStackLayout>
+                        <Button Text="İlanı yayınla"
+                                Clicked="OnPublishClicked"
+                                BackgroundColor="#1D9DE5"
+                                TextColor="White"
+                                FontAttributes="Bold"
+                                CornerRadius="18"
+                                HeightRequest="54"
+                                Margin="0,4,0,0" />
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
 
-                    <!-- Araya ince bir çizgi (Ayırıcı) -->
-                    <BoxView HeightRequest="1" Color="White" Margin="0,10" />
+        <Grid x:Name="MapContainer" Grid.Row="0" IsVisible="False">
+            <WebView x:Name="MapWebView" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" />
+            <Button Text="Kapat"
+                    Clicked="OnCloseMapClicked"
+                    BackgroundColor="#EAF6FD"
+                    TextColor="#111827"
+                    FontAttributes="Bold"
+                    CornerRadius="18"
+                    Padding="18,0"
+                    HeightRequest="40"
+                    HorizontalOptions="End"
+                    VerticalOptions="Start"
+                    Margin="0,16,16,0" />
+            <Label x:Name="MapDebugLabel" TextColor="White" BackgroundColor="#66000000" Margin="10" VerticalOptions="Start" HorizontalOptions="Fill" IsVisible="False" />
+        </Grid>
 
-                    <!-- Kurallar -->
-                    <HorizontalStackLayout Spacing="10">
-                        <CheckBox x:Name="TermsCheckBox" Color="White" />
-                        <Label Text="Kampüs kurallarına uymayı kabul ediyorum." VerticalOptions="Center" FontSize="12" TextColor="White" TranslationX="-15"/>
-                    </HorizontalStackLayout>
-
-                    <Button Text="İlanı yayınla" Clicked="OnPublishClicked" BackgroundColor="White" TextColor="#000" FontAttributes="Bold" CornerRadius="24" HeightRequest="50" Margin="0,10,0,0" />
-
-                </VerticalStackLayout>
-            </Border>
-        </VerticalStackLayout>
-    </ScrollView>
+    </Grid>
 </ContentPage>
+
+

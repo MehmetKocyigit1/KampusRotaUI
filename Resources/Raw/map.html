@@ -26,7 +26,6 @@
             height: 100vh;
         }
 
-        /* USER LOCATION MARKER (pulsing) */
         .user-marker {
             position: relative;
             width: 18px;
@@ -55,14 +54,20 @@
             100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0 }
         }
 
-        /* PIN MARKER */
         .pin-marker {
             width: 24px;
             height: 32px;
             display: block;
+            cursor: pointer;
+            transition: transform 0.12s ease;
         }
 
-        /* label style for place names */
+        .pin-marker:hover,
+        .pin-marker:focus {
+            transform: translateY(-2px) scale(1.06);
+            outline: none;
+        }
+
         .place-label {
             display: inline-block;
             background: white;
@@ -73,9 +78,10 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.15);
             border: 1px solid rgba(0,0,0,0.06);
             white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
         }
 
-        /* POPUP */
         .maplibregl-popup-content {
             border-radius: 12px;
             padding: 10px 14px;
@@ -89,7 +95,6 @@
     <div id="map"></div>
 
     <script>
-        // Simple console capture for debugging from native app
         (function(){
             window.__consoleLogs = [];
             ['log','info','warn','error'].forEach(function(level){
@@ -107,14 +112,8 @@
             window.getAndClearLogs = function(){ const copy = window.__consoleLogs.slice(); window.__consoleLogs.length = 0; return copy; };
         })();
 
-        // expose readiness flag
         window.mapReady = false;
 
-        // =====================================================
-        // ISPARTA SETTINGS
-        // =====================================================
-
-        // FORMAT => [LONGITUDE, LATITUDE]
         const ispartaCenter = [30.5537, 37.7648];
         const ispartaSouthWest = [30.40, 37.68];
         const ispartaNorthEast = [30.70, 37.90];
@@ -123,10 +122,6 @@
             ispartaSouthWest,
             ispartaNorthEast
         );
-
-        // =====================================================
-        // MAP CREATE - use simple OSM raster tiles
-        // =====================================================
 
         const map = new maplibregl.Map({
             container: "map",
@@ -151,53 +146,35 @@
             renderWorldCopies: false
         });
 
-        // apply bounds after creation
         map.on('load', function(){
             try{
                 map.setMaxBounds(maxBounds);
                 window.mapReady = true;
                 console.log('Map loaded and bounds set');
-
-                // add markers
                 addImportantPlaceMarkers();
-
             }catch(e){console.error('setMaxBounds error', e)}
         });
-
-        // =====================================================
-        // NAVIGATION CONTROLS
-        // =====================================================
 
         map.addControl(
             new maplibregl.NavigationControl(),
             "top-right"
         );
 
-        // =====================================================
-        // DEBUG LOGS
-        // =====================================================
-
         console.log("KampusRota Map Initialized");
 
-        // =====================================================
-        // IMPORTANT PLACES DATA (array for markers)
-        // coords are [lng, lat]
-        // =====================================================
-
         const importantPlaces = [
-            { title: 'Iyaş', coords: [30.544646520371813, 37.7820357443819] },
-            { title: 'Doğu Yerleşkesi', coords: [30.5345, 37.8285] },
-            { title: 'Batı Kampüsü', coords: [30.52643484819006, 37.829387079488605] },
-            { title: '100. Yıl Yerleşkesi', coords: [30.548229307533997, 37.759683693975894] },
-            { title: 'Erkek KYK', coords: [30.56188560473612, 37.782313447651674] },
-            { title: 'Bediüzzaman Kız Yurdu', coords: [30.529422829030903 , 37.84191492788001] },
-            { title: 'Mihri Hatun Kız Yurdu', coords: [30.53145637770997, 37.85498503730966] },
-            { title: 'Kaymakkapı Meydanı', coords: [30.5547, 37.7630] },
-            { title: 'Otogar', coords: [30.537213639241752, 37.810292530456906] }
+            { key: 'iyas', title: 'Iya\u015f', coords: [30.544646520371813, 37.7820357443819] },
+            { key: 'dogu-kampusu', title: 'Do\u011fu Kamp\u00fcs\u00fc', coords: [30.5345, 37.8285] },
+            { key: 'bati-kampusu', title: 'Bat\u0131 Kamp\u00fcs\u00fc', coords: [30.52643484819006, 37.829387079488605] },
+            { key: '100-yil', title: '100. Y\u0131l Yerle\u015fkesi', coords: [30.548229307533997, 37.759683693975894] },
+            { key: 'erkek-yurdu', title: 'Erkek Yurdu', coords: [30.56188560473612, 37.782313447651674] },
+            { key: 'mihrihatun-kiz-yurdu', title: 'MihriHatun K\u0131z Yurdu', coords: [30.53145637770997, 37.85498503730966] },
+            { key: 'sehir-merkezi', title: '\u015eehir Merkezi (Meydan)', coords: [30.5547, 37.7630] },
+            { key: 'otogar', title: 'Otogar', coords: [30.537213639241752, 37.810292530456906] },
+            { key: 'hastane', title: 'Şehir Hastanesi', coords: [30.56118321983313, 37.77691909029531] }
         ];
 
         function createPinElement() {
-            // SVG pin icon (simple)
             const svg = `
                 <svg class="pin-marker" viewBox="0 0 24 32" xmlns="http://www.w3.org/2000/svg">
                   <path d="M12 0C7 0 3.5 3.6 3.5 8.1c0 5.9 7.8 15.8 7.9 15.9.2-.1 7.9-10 7.9-15.9C20.5 3.6 17 0 12 0z" fill="#FF6A00" stroke="#fff" stroke-width="1"/>
@@ -205,24 +182,57 @@
                 </svg>`;
             const wrapper = document.createElement('div');
             wrapper.innerHTML = svg;
-            return wrapper.firstElementChild;
+            const pin = wrapper.firstElementChild;
+            pin.setAttribute('role', 'button');
+            pin.setAttribute('tabindex', '0');
+            return pin;
+        }
+
+        function sendLocationSelection(place) {
+            const message = {
+                type: 'locationSelected',
+                locationKey: place.key,
+                location: place.title,
+                latitude: place.coords[1],
+                longitude: place.coords[0]
+            };
+
+            const encoded = encodeURIComponent(JSON.stringify(message));
+            window.location.href = 'app://locationSelected?data=' + encoded;
+        }
+
+        function bindSelection(element, place) {
+            element.setAttribute('aria-label', place.title + ' seç');
+            element.addEventListener('click', function(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                sendLocationSelection(place);
+            });
+            element.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    sendLocationSelection(place);
+                }
+            });
         }
 
         function addImportantPlaceMarkers() {
             try {
                 importantPlaces.forEach(place => {
                     const pinEl = createPinElement();
-                    // label element
+                    bindSelection(pinEl, place);
+
                     const labelEl = document.createElement('div');
                     labelEl.className = 'place-label';
                     labelEl.textContent = place.title;
+                    labelEl.setAttribute('role', 'button');
+                    labelEl.setAttribute('tabindex', '0');
+                    bindSelection(labelEl, place);
 
-                    // marker for pin (anchor bottom)
                     new maplibregl.Marker(pinEl, { offset: [0, -16] })
                         .setLngLat(place.coords)
                         .addTo(map);
 
-                    // label above pin
                     new maplibregl.Marker(labelEl, { offset: [0, -40] })
                         .setLngLat(place.coords)
                         .addTo(map);
@@ -233,10 +243,6 @@
             }
         }
 
-        // =====================================================
-        // USER LOCATION
-        // =====================================================
-
         let userMarker = null;
 
         function setUserLocation(lat, lng) {
@@ -245,7 +251,6 @@
                 lng = parseFloat(lng);
                 const position = [lng, lat];
 
-                // Bounds control
                 if (!maxBounds.contains(position)) {
                     map.flyTo({ center: ispartaCenter, zoom: 12, speed: 0.8 });
                     console.warn('User outside Isparta bounds');
@@ -271,10 +276,6 @@
                 console.error('setUserLocation error:', error);
             }
         }
-
-        // =====================================================
-        // ROUTE SYSTEM
-        // =====================================================
 
         const routeSourceId = 'route-source';
         const routeLayerId = 'route-layer';
@@ -310,9 +311,6 @@
             }
         }
 
-        // =====================================================
-        // GLOBAL FUNCTIONS
-        // =====================================================
         window.setUserLocation = setUserLocation;
         window.drawRoute = drawRoute;
 
