@@ -93,6 +93,13 @@
                         </Grid>
 
                         <VerticalStackLayout Spacing="6">
+                            <Label Text="İletişim telefonu (isteğe bağlı)" FontSize="12" FontAttributes="Bold" TextColor="#74777D" />
+                            <Border Stroke="#BDDDED" StrokeThickness="1" StrokeShape="RoundRectangle 14" BackgroundColor="#EAF6FD" Padding="12,0" HeightRequest="52">
+                                <Entry x:Name="ContactPhoneEntry" Placeholder="05XX XXX XX XX" Keyboard="Telephone" TextColor="#111827" PlaceholderColor="#9CA3AF" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Spacing="6">
                             <Label Text="Açıklama / Kurallar" FontSize="12" FontAttributes="Bold" TextColor="#74777D" />
                             <Border Stroke="#BDDDED" StrokeThickness="1" StrokeShape="RoundRectangle 14" BackgroundColor="#EAF6FD" Padding="12,8">
                                 <Editor x:Name="DescriptionEditor" Placeholder="Buluşma noktası, bagaj, notlar..." HeightRequest="90" TextColor="#111827" PlaceholderColor="#9CA3AF" />

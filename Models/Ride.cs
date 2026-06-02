@@ -15,6 +15,7 @@ public class Yolculuk
 
      public decimal KisiBasiUcret { get; set; } = 0;
     public string Aciklama { get; set; } = string.Empty;
+    public string IletisimTelefonu { get; set; } = string.Empty;
     public bool SadeceKadinlarMi { get; set; } = false;
 
      public Kullanici? Surucu { get; set; }

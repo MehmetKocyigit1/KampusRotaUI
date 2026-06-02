@@ -157,6 +157,7 @@ public partial class AddRidePage : ContentPage
         var kalkis = DeparturePicker.SelectedItem?.ToString();
         var varis = DestinationPicker.SelectedItem?.ToString();
         var aciklama = DescriptionEditor.Text?.Trim() ?? string.Empty;
+        var iletisimTelefonu = ContactPhoneEntry.Text?.Trim() ?? string.Empty;
 
         int.TryParse(SeatsEntry.Text, out var koltukSayisi);
         decimal.TryParse(PriceEntry.Text, out var ucret);
@@ -197,6 +198,12 @@ public partial class AddRidePage : ContentPage
             return;
         }
 
+        if (iletisimTelefonu.Length > 20)
+        {
+            await DisplayAlert("Telefon", "Telefon numarası en fazla 20 karakter olabilir.", "Tamam");
+            return;
+        }
+
         if (!TryGetCurrentUserId(out var surucuId))
         {
             await DisplayAlert("Oturum Hatası", "Kullanıcı bilgisi bulunamadı. Lütfen tekrar giriş yapın.", "Tamam");
@@ -211,6 +218,7 @@ public partial class AddRidePage : ContentPage
             BosKoltukSayisi = koltukSayisi,
             KisiBasiUcret = ucret,
             Aciklama = aciklama,
+            IletisimTelefonu = iletisimTelefonu,
             SadeceKadinlarMi = WomenOnlyCheckBox?.IsChecked ?? false,
             SurucuId = surucuId,
             AktifMi = true,

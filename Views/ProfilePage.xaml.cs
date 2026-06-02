@@ -17,6 +17,7 @@ public partial class ProfilePage : ContentPage
     {
         base.OnAppearing();
         LoadProfileDetails();
+        _ = RefreshProfileAsync();
         _ = LoadProfileStatsAsync();
     }
 
@@ -26,6 +27,9 @@ public partial class ProfilePage : ContentPage
 
         NameLabel.Text = Preferences.Default.Get("UserFullName", "Kullanıcı");
         EmailLabel.Text = Preferences.Default.Get("UserEmail", string.Empty);
+        PhoneSummaryLabel.Text = GetDisplayValue(Preferences.Default.Get("UserPhone", string.Empty));
+        GenderSummaryLabel.Text = GetDisplayValue(Preferences.Default.Get("UserGender", string.Empty));
+        StudentNoSummaryLabel.Text = GetDisplayValue(Preferences.Default.Get("UserStudentNo", string.Empty));
 
         var bio = Preferences.Default.Get("UserBio", string.Empty);
         if (!string.IsNullOrEmpty(bio))
@@ -36,6 +40,42 @@ public partial class ProfilePage : ContentPage
         else
         {
             BioLabel.IsVisible = false;
+        }
+
+        UpdateProfileCompletion();
+    }
+
+    private async Task RefreshProfileAsync()
+    {
+        var userId = GetCurrentUserId();
+        if (userId == 0)
+        {
+            return;
+        }
+
+        try
+        {
+            var currentUser = await _apiServices.KullaniciGetirAsync(userId);
+            if (currentUser == null)
+            {
+                return;
+            }
+
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                Preferences.Default.Set("UserFullName", currentUser.TamAd);
+                Preferences.Default.Set("UserEmail", currentUser.Email ?? string.Empty);
+                Preferences.Default.Set("UserGender", currentUser.Cinsiyet ?? string.Empty);
+                Preferences.Default.Set("UserPhone", currentUser.TelefonNumarasi ?? string.Empty);
+                Preferences.Default.Set("UserStudentNo", currentUser.OgrenciNumarasi ?? string.Empty);
+                Preferences.Default.Set("UserBio", currentUser.Biyografi ?? string.Empty);
+                Preferences.Default.Set("UserProfilePhotoUrl", currentUser.ProfilFotografiUrl ?? string.Empty);
+                LoadProfileDetails();
+            });
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Profil bilgileri yenilenemedi: {ex.Message}");
         }
     }
 
@@ -199,35 +239,13 @@ public partial class ProfilePage : ContentPage
 
     private async void OnEditProfileClicked(object sender, EventArgs e)
     {
-        // Simple modal to edit bio
-        var editor = new Editor { Text = Preferences.Default.Get("UserBio", string.Empty), HeightRequest = 120 };
-        var saveButton = new Button { Text = "Kaydet", BackgroundColor = Color.FromArgb("#1D9DE5"), TextColor = Colors.White };
-        var cancelButton = new Button { Text = "İptal", BackgroundColor = Colors.Transparent, TextColor = Colors.Black };
-
-        var layout = new VerticalStackLayout { Padding = 18, Spacing = 12 };
-        layout.Add(new Label { Text = "Profil Biyografi", FontAttributes = FontAttributes.Bold, FontSize = 18 });
-        layout.Add(editor);
-        var btnRow = new HorizontalStackLayout { Spacing = 10 };
-        btnRow.Add(saveButton);
-        btnRow.Add(cancelButton);
-        layout.Add(btnRow);
-
-        var modal = new ContentPage { Content = layout };
-
-        saveButton.Clicked += async (_, _) =>
+        if (Shell.Current is not null)
         {
-            Preferences.Default.Set("UserBio", editor.Text ?? string.Empty);
-            await Navigation.PopModalAsync();
-            BioLabel.Text = editor.Text;
-            BioLabel.IsVisible = !string.IsNullOrWhiteSpace(editor.Text);
-        };
+            await Shell.Current.GoToAsync(nameof(EditProfilePage));
+            return;
+        }
 
-        cancelButton.Clicked += async (_, _) =>
-        {
-            await Navigation.PopModalAsync();
-        };
-
-        await Navigation.PushModalAsync(modal);
+        await Navigation.PushAsync(new EditProfilePage());
     }
 
     private async void OnNotificationSettingsClicked(object sender, EventArgs e)
@@ -319,8 +337,11 @@ public partial class ProfilePage : ContentPage
         Preferences.Default.Remove("UserFullName");
         Preferences.Default.Remove("UserEmail");
         Preferences.Default.Remove("UserGender");
+        Preferences.Default.Remove("UserPhone");
+        Preferences.Default.Remove("UserStudentNo");
         Preferences.Default.Remove("UserRating");
         Preferences.Default.Remove("UserBio");
+        Preferences.Default.Remove("UserProfilePhotoUrl");
     }
 
     private static void NavigateToLogin()
@@ -335,5 +356,26 @@ public partial class ProfilePage : ContentPage
     {
         var fullStars = Math.Clamp((int)Math.Round(rating, MidpointRounding.AwayFromZero), 0, 5);
         return new string('★', fullStars) + new string('☆', 5 - fullStars);
+    }
+
+    private void UpdateProfileCompletion()
+    {
+        var completed = 0;
+        var total = 5;
+
+        if (!string.IsNullOrWhiteSpace(Preferences.Default.Get("UserFullName", string.Empty))) completed++;
+        if (!string.IsNullOrWhiteSpace(Preferences.Default.Get("UserEmail", string.Empty))) completed++;
+        if (!string.IsNullOrWhiteSpace(Preferences.Default.Get("UserStudentNo", string.Empty))) completed++;
+        if (!string.IsNullOrWhiteSpace(Preferences.Default.Get("UserPhone", string.Empty))) completed++;
+        if (!string.IsNullOrWhiteSpace(Preferences.Default.Get("UserBio", string.Empty))) completed++;
+
+        var progress = completed / (double)total;
+        ProfileCompletionBar.Progress = progress;
+        ProfileCompletionLabel.Text = $"{Math.Round(progress * 100):0}%";
+    }
+
+    private static string GetDisplayValue(string value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? "Belirtilmemiş" : value;
     }
 }

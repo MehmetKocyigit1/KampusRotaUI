@@ -140,6 +140,27 @@ public class ApiServices
         }
     }
 
+    public async Task<Kullanici?> ProfilGuncelleAsync(int kullaniciId, Kullanici guncelKullanici)
+    {
+        try
+        {
+            var response = await _httpClient.PutAsJsonAsync($"api/users/{kullaniciId}", guncelKullanici);
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<Kullanici>();
+            }
+
+            var error = await response.Content.ReadAsStringAsync();
+            Debug.WriteLine($"PROFİL GÜNCELLEME HATASI: {response.StatusCode} - {error}");
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine("PROFİL GÜNCELLEME HATASI: " + ex.Message);
+            return null;
+        }
+    }
+
     // --- 2. YOLCULUK İŞLEMLERİ ---
 
     public async Task<bool> YolculukEkleAsync(Yolculuk yeniYolculuk, int kullaniciId)

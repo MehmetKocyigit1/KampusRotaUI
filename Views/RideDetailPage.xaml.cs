@@ -32,9 +32,9 @@ public partial class RideDetailPage : ContentPage
         DriverRatingLabel.Text = rating.ToString("0.0", CultureInfo.InvariantCulture);
         DriverStarsLabel.Text = BuildStars(rating);
 
-        var email = _ride.Surucu?.Email;
-        var phone = _ride.Surucu?.TelefonNumarasi;
-        DriverEmailLabel.Text = string.IsNullOrWhiteSpace(email) ? "E-posta: belirtilmemiş" : $"E-posta: {email}";
+        var email = GetSchoolEmail();
+        var phone = GetContactPhone();
+        DriverEmailLabel.Text = string.IsNullOrWhiteSpace(email) ? "Okul e-postası: belirtilmemiş" : $"Okul e-postası: {email}";
         DriverPhoneLabel.Text = string.IsNullOrWhiteSpace(phone) ? "Telefon: belirtilmemiş" : $"Telefon: {phone}";
 
         DescriptionBlock.IsVisible = !string.IsNullOrWhiteSpace(_ride.Aciklama);
@@ -110,10 +110,10 @@ public partial class RideDetailPage : ContentPage
 
     private async void OnCallClicked(object sender, EventArgs e)
     {
-        var phone = _ride.Surucu?.TelefonNumarasi;
+        var phone = GetContactPhone();
         if (string.IsNullOrWhiteSpace(phone))
         {
-            await DisplayAlert("Telefon", "Sürücü telefon numarası paylaşmamış.", "Tamam");
+            await DisplayAlert("Telefon", "Sürücü bu ilan için telefon numarası paylaşmamış.", "Tamam");
             return;
         }
 
@@ -122,16 +122,28 @@ public partial class RideDetailPage : ContentPage
 
     private async void OnEmailClicked(object sender, EventArgs e)
     {
-        var email = _ride.Surucu?.Email;
+        var email = GetSchoolEmail();
         if (string.IsNullOrWhiteSpace(email))
         {
-            await DisplayAlert("E-posta", "Sürücü e-posta adresi paylaşmamış.", "Tamam");
+            await DisplayAlert("Okul E-postası", "Sürücü okul e-postası paylaşmamış.", "Tamam");
             return;
         }
 
         var subject = Uri.EscapeDataString($"KampüsRota yolculuk talebi: {_ride.Rota}");
         var body = Uri.EscapeDataString("Merhaba, ilandaki yolculuğa katılmak istiyorum. Uygunsa detayları konuşabilir miyiz?");
         await Launcher.Default.OpenAsync($"mailto:{email}?subject={subject}&body={body}");
+    }
+
+    private string GetContactPhone()
+    {
+        return !string.IsNullOrWhiteSpace(_ride.IletisimTelefonu)
+            ? _ride.IletisimTelefonu.Trim()
+            : _ride.Surucu?.TelefonNumarasi?.Trim() ?? string.Empty;
+    }
+
+    private string GetSchoolEmail()
+    {
+        return _ride.Surucu?.Email?.Trim() ?? string.Empty;
     }
 
     private static int GetCurrentUserId()

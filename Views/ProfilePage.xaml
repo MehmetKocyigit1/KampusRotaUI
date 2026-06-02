@@ -96,6 +96,41 @@
                 </Border>
             </Grid>
 
+            <!-- Profile summary -->
+            <VerticalStackLayout Spacing="10" Padding="18,18,18,0">
+                <Label Text="PROFİL ÖZETİ" FontSize="12" FontAttributes="Bold" TextColor="#74777D" Margin="4,0" />
+
+                <Border BackgroundColor="#EAF6FD" Stroke="#BDDDED" StrokeThickness="1" StrokeShape="RoundRectangle 16" Padding="16">
+                    <VerticalStackLayout Spacing="12">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Spacing="3">
+                                <Label Text="Profil tamamlanma" FontSize="12" FontAttributes="Bold" TextColor="#74777D" />
+                                <ProgressBar x:Name="ProfileCompletionBar" Progress="0" ProgressColor="#1D9DE5" BackgroundColor="#D6EEFB" HeightRequest="8" />
+                            </VerticalStackLayout>
+                            <Label x:Name="ProfileCompletionLabel" Grid.Column="1" Text="0%" FontSize="13" FontAttributes="Bold" TextColor="#1D9DE5" VerticalOptions="Center" />
+                        </Grid>
+
+                        <BoxView HeightRequest="1" Color="#CFEAFF" />
+
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="14">
+                            <VerticalStackLayout Spacing="3">
+                                <Label Text="Telefon" FontSize="12" FontAttributes="Bold" TextColor="#74777D" />
+                                <Label x:Name="PhoneSummaryLabel" Text="Belirtilmemiş" FontSize="13" TextColor="#111827" LineBreakMode="TailTruncation" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="1" Spacing="3">
+                                <Label Text="Cinsiyet" FontSize="12" FontAttributes="Bold" TextColor="#74777D" />
+                                <Label x:Name="GenderSummaryLabel" Text="Belirtilmemiş" FontSize="13" TextColor="#111827" LineBreakMode="TailTruncation" />
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <VerticalStackLayout Spacing="3">
+                            <Label Text="Öğrenci numarası" FontSize="12" FontAttributes="Bold" TextColor="#74777D" />
+                            <Label x:Name="StudentNoSummaryLabel" Text="Belirtilmemiş" FontSize="13" TextColor="#111827" LineBreakMode="TailTruncation" />
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+
             <!-- Quick actions -->
             <Grid ColumnDefinitions="*,*" ColumnSpacing="12" Padding="18,18,18,0">
                 <Button Text="Profil Düzenle"

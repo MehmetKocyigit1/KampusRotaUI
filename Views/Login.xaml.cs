@@ -97,6 +97,10 @@ public partial class Login : ContentPage
             Preferences.Default.Set("UserFullName", tamAd);
             Preferences.Default.Set("UserEmail", userEmail);
             Preferences.Default.Set("UserGender", kullanici.Cinsiyet);
+            Preferences.Default.Set("UserPhone", kullanici.TelefonNumarasi ?? string.Empty);
+            Preferences.Default.Set("UserStudentNo", kullanici.OgrenciNumarasi ?? string.Empty);
+            Preferences.Default.Set("UserBio", kullanici.Biyografi ?? string.Empty);
+            Preferences.Default.Set("UserProfilePhotoUrl", kullanici.ProfilFotografiUrl ?? string.Empty);
             Preferences.Default.Set("UserRating", kullanici.OrtalamaPuan.ToString("0.0", CultureInfo.InvariantCulture));
 
             // Handle Remember Me preference: save or remove credentials
