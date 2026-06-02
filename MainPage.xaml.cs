@@ -233,7 +233,8 @@ public partial class MainPage : ContentPage
     {
         var selectedStart = StartPicker.SelectedItem?.ToString();
         var selectedDestination = DestinationPicker.SelectedItem?.ToString();
-        var selectedDate = RideDate.Date;
+        var selectedDate
+            = RideDate.Date;
 
         if (string.IsNullOrEmpty(selectedStart) || string.IsNullOrEmpty(selectedDestination))
         {
