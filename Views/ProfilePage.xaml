@@ -131,26 +131,6 @@
                 </Border>
             </VerticalStackLayout>
 
-            <!-- Quick actions -->
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="12" Padding="18,18,18,0">
-                <Button Text="Profil Düzenle"
-                        BackgroundColor="#1D9DE5"
-                        TextColor="White"
-                        FontAttributes="Bold"
-                        CornerRadius="16"
-                        HeightRequest="48"
-                        Clicked="OnEditProfileClicked" />
-
-                <Button Grid.Column="1"
-                        Text="Yeni Yolculuk"
-                        BackgroundColor="#1D9DE5"
-                        TextColor="White"
-                        FontAttributes="Bold"
-                        CornerRadius="16"
-                        HeightRequest="48"
-                        Clicked="OnAddRideClicked" />
-            </Grid>
-
             <!-- Account settings -->
             <VerticalStackLayout Spacing="10" Padding="18,24,18,0">
                 <Label Text="HESAP AYARLARI" FontSize="12" FontAttributes="Bold" TextColor="#74777D" Margin="4,0" />
