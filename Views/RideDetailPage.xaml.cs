@@ -131,7 +131,10 @@ public partial class RideDetailPage : ContentPage
 
         var subject = Uri.EscapeDataString($"KampüsRota yolculuk talebi: {_ride.Rota}");
         var body = Uri.EscapeDataString("Merhaba, ilandaki yolculuğa katılmak istiyorum. Uygunsa detayları konuşabilir miyiz?");
-        await Launcher.Default.OpenAsync($"mailto:{email}?subject={subject}&body={body}");
+        var recipient = Uri.EscapeDataString(email);
+        var gmailComposeUrl = $"https://mail.google.com/mail/?view=cm&fs=1&to={recipient}&su={subject}&body={body}";
+
+        await Launcher.Default.OpenAsync(gmailComposeUrl);
     }
 
     private string GetContactPhone()

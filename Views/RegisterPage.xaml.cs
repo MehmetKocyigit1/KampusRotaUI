@@ -15,9 +15,6 @@ public partial class RegisterPage : ContentPage
         InitializeComponent();
     }
 
-    // =========================
-    // CİNSİYET SEÇİMİ
-    // =========================
 
     private void ResetGenderBorders()
     {
@@ -72,9 +69,7 @@ public partial class RegisterPage : ContentPage
 
         try
         {
-            // =========================
-            // BOŞ ALAN KONTROLÜ
-            // =========================
+            
 
             if (string.IsNullOrWhiteSpace(ad) ||
                 string.IsNullOrWhiteSpace(soyad) ||
@@ -124,10 +119,6 @@ public partial class RegisterPage : ContentPage
 
                 return;
             }
-
-            // =========================
-            // ŞİFRE KONTROLLERİ
-            // =========================
 
             if (sifre.Length < 6)
             {

@@ -35,8 +35,7 @@ public class ApiServices
     }
  
 
-    // --- 1. KULLANICI İŞLEMLERİ (Backend API) ---
-
+ 
     public async Task<Kullanici?> LoginAsync(string email, string sifre)
     {
         try

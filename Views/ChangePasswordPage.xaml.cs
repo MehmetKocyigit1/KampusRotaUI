@@ -21,15 +21,13 @@ public partial class ChangePasswordPage : ContentPage
         var newPass = NewPasswordEntry.Text;
         var confirmPass = ConfirmPasswordEntry.Text;
 
-        // 1. Boş alan kontrolü
-        if (string.IsNullOrWhiteSpace(oldPass) || string.IsNullOrWhiteSpace(newPass) || string.IsNullOrWhiteSpace(confirmPass))
+         if (string.IsNullOrWhiteSpace(oldPass) || string.IsNullOrWhiteSpace(newPass) || string.IsNullOrWhiteSpace(confirmPass))
         {
             ShowMessage("Tüm alanları doldurmalısınız!", Colors.Red);
             return;
         }
 
-        // 2. Şifre uzunluk kontrolü
-        if (newPass.Length < 6)
+         if (newPass.Length < 6)
         {
             ShowMessage("Yeni şifre en az 6 karakter olmalıdır.", Colors.Red);
             return;
@@ -41,15 +39,13 @@ public partial class ChangePasswordPage : ContentPage
             return;
         }
 
-        // 3. Şifre eşleşme kontrolü
-        if (newPass != confirmPass)
+         if (newPass != confirmPass)
         {
             ShowMessage("Yeni şifreler birbiriyle eşleşmiyor!", Colors.Red);
             return;
         }
 
-        // 4. Giriş yapan kullanıcının ID'sini Preferences'tan (Cihaz Hafızasından) alıyoruz
-        if (!TryGetCurrentUserId(out var userId))
+         if (!TryGetCurrentUserId(out var userId))
         {
             ShowMessage("Oturum hatası. Lütfen uygulamaya tekrar giriş yapın.", Colors.Red);
             return;
