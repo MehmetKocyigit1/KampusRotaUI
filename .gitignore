@@ -52,6 +52,7 @@ android/
 # =========================
 *.db
 *.sqlite
+Resources/Images/kampusrota_logo.svg
 
 # =========================
 # OS

@@ -1,0 +1,30 @@
+name: UI CI
+
+on:
+  push:
+    branches: [Mehmet, main]
+  pull_request:
+    branches: [Mehmet, main]
+
+jobs:
+  build-windows:
+    name: Restore and build Windows target
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Install MAUI workload
+        run: dotnet workload install maui
+
+      - name: Restore
+        run: dotnet restore KampusRotaUI.sln
+
+      - name: Build Windows target
+        run: dotnet build KampusRotaUI.sln --configuration Release --framework net8.0-windows10.0.19041.0 --no-restore
