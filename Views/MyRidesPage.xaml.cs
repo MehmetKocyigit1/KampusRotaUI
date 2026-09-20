@@ -174,6 +174,16 @@ public partial class MyRidesPage : ContentPage
         await LoadDataAsync();
     }
 
+    private async void OnEditRideClicked(object sender, EventArgs e)
+    {
+        if (sender is not Button { CommandParameter: Yolculuk ride })
+        {
+            return;
+        }
+
+        await Navigation.PushAsync(new AddRidePage(ride));
+    }
+
     private async void OnRateDriverClicked(object sender, EventArgs e)
     {
         if (sender is not Button { CommandParameter: YolculukTalebi request })

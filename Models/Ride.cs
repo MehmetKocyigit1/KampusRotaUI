@@ -1,4 +1,4 @@
-﻿namespace KampusRotaUI.Models;
+namespace KampusRotaUI.Models;
 
 public class Yolculuk
 {
@@ -19,6 +19,12 @@ public class Yolculuk
     public bool SadeceKadinlarMi { get; set; } = false;
 
      public Kullanici? Surucu { get; set; }
+     public int? UniversityId { get; set; }
+     public University? University { get; set; }
+     public double? KalkisLatitude { get; set; }
+     public double? KalkisLongitude { get; set; }
+     public double? VarisLatitude { get; set; }
+     public double? VarisLongitude { get; set; }
 
      public string Rota => $"{KalkisNoktasi} ➔ {VarisNoktasi}";
     public string TarihFormatli => KalkisZamani.ToString("dd/MM/yyyy HH:mm");

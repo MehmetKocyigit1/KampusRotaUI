@@ -1,4 +1,4 @@
-﻿namespace KampusRotaUI.Models;
+namespace KampusRotaUI.Models;
 
 public class Kullanici
 {
@@ -19,6 +19,11 @@ public class Kullanici
     public double OrtalamaPuan { get; set; } = 5.0;
     public string Biyografi { get; set; } = string.Empty;
 
+    public int? UniversityId { get; set; }
+    public University? University { get; set; }
+
     // UI (Arayüz) İçin Hesaplanmış Özellik - Ekranda Göstermek İçin
     public string TamAd => $"{Ad} {Soyad}";
+    public string UniversityName => University?.Name ?? "";
+    public string City => University?.City ?? "";
 }

@@ -6,11 +6,37 @@
              NavigationPage.HasNavigationBar="False">
 
     <Grid>
+        <!-- Map Web View (MapLibre OpenStreetMap) -->
         <WebView x:Name="MapWebView" HorizontalOptions="Fill" VerticalOptions="Fill" />
 
-         <!--Small overlay for JS logs / errors--> 
-        <Frame BackgroundColor="#80000000" Padding="8" CornerRadius="8" HasShadow="False" HorizontalOptions="End" VerticalOptions="Start" Margin="12">
-            <Label x:Name="JsLogLabel" TextColor="White" FontSize="12" MaxLines="3" LineBreakMode="TailTruncation" />
+        <!-- Floating Top University Selector Bar -->
+        <Frame BackgroundColor="#F5FFFFFF" 
+               BorderColor="#E0E0E0" 
+               CornerRadius="14" 
+               Padding="12,8" 
+               HasShadow="True" 
+               HorizontalOptions="Center" 
+               VerticalOptions="Start" 
+               Margin="16,40,16,0"
+               MaximumWidthRequest="360">
+            <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                <Label Text="🎓" FontSize="18" VerticalOptions="Center" />
+                <Picker x:Name="UniversityPicker"
+                        Title="Üniversite Seçiniz"
+                        ItemDisplayBinding="{Binding Name}"
+                        SelectedIndexChanged="OnUniversitySelectedIndexChanged"
+                        TextColor="#1C1C1E"
+                        TitleColor="#8E8E93"
+                        FontAttributes="Bold"
+                        FontSize="14"
+                        WidthRequest="260"
+                        VerticalOptions="Center" />
+            </HorizontalStackLayout>
+        </Frame>
+
+        <!-- Small overlay for JS status/logs -->
+        <Frame BackgroundColor="#A0000000" Padding="8,4" CornerRadius="8" HasShadow="False" HorizontalOptions="End" VerticalOptions="End" Margin="12,12,12,24">
+            <Label x:Name="JsLogLabel" TextColor="White" FontSize="11" MaxLines="2" LineBreakMode="TailTruncation" />
         </Frame>
     </Grid>
 </ContentPage>

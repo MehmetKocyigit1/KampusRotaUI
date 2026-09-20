@@ -1,242 +1,407 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="tr">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kampüs Haritası</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KampusRota Harita</title>
+
+    <!-- MAPLIBRE GL JS (100% Free & Open Source OpenStreetMap) -->
+    <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
+    <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+
     <style>
-        * {
+        html,
+        body {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background-color: #f5f5f5;
+            width: 100%;
+            height: 100%;
             overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f5f5f7;
         }
 
         #map {
-            width: 100%;
+            width: 100vw;
             height: 100vh;
-            z-index: 1;
         }
 
-        .map-container {
+        .user-marker {
             position: relative;
-            width: 100%;
-            height: 100%;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #007AFF;
+            border: 3px solid white;
+            box-shadow: 0 0 10px rgba(0, 122, 255, 0.7);
         }
 
-        .info-panel {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            max-height: 25%;
-            overflow-y: auto;
-            z-index: 1000;
-            transform: translateY(100%);
-            transition: transform 0.3s ease;
+        .user-marker::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(0, 122, 255, 0.2);
+            animation: pulse 1.6s infinite;
+            z-index: -1;
         }
 
-        .info-panel.active {
-            transform: translateY(0);
+        @keyframes pulse {
+            0% {
+                transform: translate(-50%, -50%) scale(0.6);
+                opacity: 0.9;
+            }
+            70% {
+                transform: translate(-50%, -50%) scale(1.6);
+                opacity: 0;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1.6);
+                opacity: 0;
+            }
         }
 
-        .info-panel h3 {
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 18px;
-        }
-
-        .info-panel p {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 15px;
-        }
-
-        .btn-select {
-            background-color: #007AFF;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
+        .pin-marker {
+            width: 26px;
+            height: 34px;
+            display: block;
             cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            width: 100%;
+            transition: transform 0.15s ease;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
         }
 
-        .btn-select:hover {
-            background-color: #0051D5;
+        .pin-marker:hover,
+        .pin-marker:focus {
+            transform: translateY(-4px) scale(1.1);
+            outline: none;
         }
 
-        .btn-select:active {
-            transform: scale(0.98);
-        }
-
-        .location-description {
+        .place-label {
+            display: inline-flex;
+            align-items: center;
+            background: white;
+            color: #1c1c1e;
+            padding: 5px 9px;
+            border-radius: 10px;
             font-size: 12px;
-            color: #999;
-            margin-bottom: 10px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.15s ease;
         }
 
-        .leaflet-popup-content-wrapper {
-            background-color: white !important;
-            border-radius: 8px !important;
+        .place-label:hover {
+            transform: translateY(-2px);
         }
 
-        .leaflet-popup-tip {
-            background-color: white !important;
+        .category-badge {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+            display: inline-block;
+        }
+
+        .maplibregl-popup-content {
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-size: 13px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
         }
     </style>
 </head>
+
 <body>
-    <div class="map-container">
-        <div id="map"></div>
-        <div class="info-panel" id="infoPanel">
-            <h3 id="locationName">Lokasyon</h3>
-            <p id="locationDesc" class="location-description"></p>
-            <button class="btn-select" onclick="selectLocation()">Bunu Seç</button>
-        </div>
-    </div>
+
+    <div id="map"></div>
 
     <script>
-        // Map initialization
-        const map = L.map('map').setView([39.9, 32.8], 13);
+        (function () {
+            window.__consoleLogs = [];
+            ['log', 'info', 'warn', 'error'].forEach(function (level) {
+                const orig = console[level];
+                console[level] = function () {
+                    try {
+                        const args = Array.prototype.slice.call(arguments).map(function (a) {
+                            try { return (typeof a === 'object') ? JSON.stringify(a) : String(a); } catch (e) { return String(a); }
+                        });
+                        window.__consoleLogs.push({ level: level, message: args.join(' ') });
+                    } catch (e) { }
+                    if (orig && orig.apply) orig.apply(console, arguments);
+                };
+            });
+            window.getAndClearLogs = function () {
+                const copy = window.__consoleLogs.slice();
+                window.__consoleLogs.length = 0;
+                return copy;
+            };
+        })();
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors',
-            maxZoom: 19
-        }).addTo(map);
+        window.mapReady = false;
 
-        // Campus locations with coordinates
-        const locations = [
-            {
-                name: 'Iyaş',
-                lat: 39.8950,
-                lng: 32.7850,
-                description: 'Ankara, Iyas Yerleşkesi'
+        // Default to Turkey bounding box (Users can view anywhere across Turkey)
+        const turkeySouthWest = [25.5, 35.8];
+        const turkeyNorthEast = [44.8, 42.2];
+        const turkeyBounds = new maplibregl.LngLatBounds(turkeySouthWest, turkeyNorthEast);
+
+        // Initial default center: Süleyman Demirel Üniversitesi / Isparta
+        const defaultCenter = [30.5345, 37.8285];
+
+        const map = new maplibregl.Map({
+            container: "map",
+            style: {
+                version: 8,
+                sources: {
+                    'esri-tiles': {
+                        type: 'raster',
+                        tiles: [
+                            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}'
+                        ],
+                        tileSize: 256,
+                        attribution: '© Esri, HERE, Garmin, OpenStreetMap contributors'
+                    }
+                },
+                layers: [
+                    { id: 'esri-tiles', type: 'raster', source: 'esri-tiles' }
+                ]
             },
-            {
-                name: 'Doğu Kampüsü',
-                lat: 39.9050,
-                lng: 32.8150,
-                description: 'Ankara Üniversitesi Doğu Kampüsü'
-            },
-            {
-                name: 'Batı Kampüsü',
-                lat: 39.9100,
-                lng: 32.7950,
-                description: 'Ankara Üniversitesi Batı Kampüsü'
-            },
-            {
-                name: '100. Yıl Yerleşkesi',
-                lat: 39.9200,
-                lng: 32.8050,
-                description: 'Ankara Üniversitesi 100. Yıl Yerleşkesi'
-            },
-            {
-                name: 'Erkek Yurdu',
-                lat: 39.8900,
-                lng: 32.8100,
-                description: 'Erkek Öğrenci Yurdu'
-            },
-            {
-                name: 'MihriHatun Kız Yurdu',
-                lat: 39.8850,
-                lng: 32.8050,
-                description: 'Mihri Hatun Kız Öğrenci Yurdu'
-            },
-            {
-                name: 'Şehir Merkezi (Meydan)',
-                lat: 39.9300,
-                lng: 32.8550,
-                description: 'Ankara Şehir Merkezi'
-            },
-            {
-                name: 'Otogar',
-                lat: 39.9400,
-                lng: 32.8700,
-                description: 'Ankara Otogar'
+            center: defaultCenter,
+            zoom: 14,
+            minZoom: 5,
+            maxZoom: 18,
+            renderWorldCopies: false
+        });
+
+        // Set max bounds to Turkey so user doesn't get lost abroad, but can move freely inside Turkey
+        map.setMaxBounds(turkeyBounds);
+
+        map.addControl(
+            new maplibregl.NavigationControl(),
+            "top-right"
+        );
+
+        let currentMarkers = [];
+        let userMarker = null;
+
+        // Colors per category
+        const categoryColors = {
+            'Kampus': '#007AFF', // Blue
+            'Yurt': '#34C759',    // Green
+            'Ulasim': '#FF9500',  // Orange
+            'Sosyal': '#AF52DE',  // Purple
+            'Diger': '#8E8E93'    // Gray
+        };
+
+        function getCategoryColor(category) {
+            return categoryColors[category] || '#FF6A00';
+        }
+
+        function createPinElement(category) {
+            const color = getCategoryColor(category);
+            const svg = `
+                <svg class="pin-marker" viewBox="0 0 24 32" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 0C7 0 3.5 3.6 3.5 8.1c0 5.9 7.8 15.8 7.9 15.9.2-.1 7.9-10 7.9-15.9C20.5 3.6 17 0 12 0z" fill="${color}" stroke="#fff" stroke-width="1.5"/>
+                  <circle cx="12" cy="8.1" r="3.5" fill="#fff"/>
+                </svg>`;
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = svg;
+            const pin = wrapper.firstElementChild;
+            pin.setAttribute('role', 'button');
+            pin.setAttribute('tabindex', '0');
+            return pin;
+        }
+
+        function sendLocationSelection(place) {
+            const message = {
+                type: 'locationSelected',
+                locationKey: place.locationKey || place.key || '',
+                location: place.title || place.location || '',
+                latitude: place.latitude !== undefined ? place.latitude : place.coords[1],
+                longitude: place.longitude !== undefined ? place.longitude : place.coords[0]
+            };
+
+            const encoded = encodeURIComponent(JSON.stringify(message));
+            window.location.href = 'app://locationSelected?data=' + encoded;
+        }
+
+        function bindSelection(element, place) {
+            element.setAttribute('aria-label', (place.title || place.location) + ' seç');
+            element.addEventListener('click', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                sendLocationSelection(place);
+            });
+            element.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    sendLocationSelection(place);
+                }
+            });
+        }
+
+        // Dynamically loads campus place markers from API JSON
+        window.loadCampusPlaces = function (places) {
+            try {
+                if (typeof places === 'string') {
+                    places = JSON.parse(places);
+                }
+
+                // Remove existing markers
+                currentMarkers.forEach(m => m.remove());
+                currentMarkers = [];
+
+                if (!places || !Array.isArray(places)) {
+                    console.warn('places is not an array');
+                    return;
+                }
+
+                places.forEach(place => {
+                    const lat = place.latitude !== undefined ? place.latitude : (place.coords ? place.coords[1] : null);
+                    const lng = place.longitude !== undefined ? place.longitude : (place.coords ? place.coords[0] : null);
+                    if (lat == null || lng == null) return;
+
+                    const coords = [parseFloat(lng), parseFloat(lat)];
+                    const category = place.category || 'Kampus';
+                    const color = getCategoryColor(category);
+
+                    const pinEl = createPinElement(category);
+                    bindSelection(pinEl, place);
+
+                    const labelEl = document.createElement('div');
+                    labelEl.className = 'place-label';
+                    labelEl.innerHTML = `<span class="category-badge" style="background-color:${color}"></span>${place.title || place.location}`;
+                    labelEl.setAttribute('role', 'button');
+                    labelEl.setAttribute('tabindex', '0');
+                    bindSelection(labelEl, place);
+
+                    const pinMarker = new maplibregl.Marker(pinEl, { offset: [0, -16] })
+                        .setLngLat(coords)
+                        .addTo(map);
+
+                    const labelMarker = new maplibregl.Marker(labelEl, { offset: [0, -42] })
+                        .setLngLat(coords)
+                        .addTo(map);
+
+                    currentMarkers.push(pinMarker, labelMarker);
+                });
+
+                console.log('Loaded ' + places.length + ' campus place markers dynamically');
+            } catch (e) {
+                console.error('loadCampusPlaces error:', e);
             }
+        };
+
+        // Smoothly focuses map to a university campus
+        window.focusUniversity = function (lat, lng, zoom) {
+            try {
+                lat = parseFloat(lat);
+                lng = parseFloat(lng);
+                zoom = zoom ? parseInt(zoom) : 14;
+
+                map.flyTo({
+                    center: [lng, lat],
+                    zoom: zoom,
+                    essential: true,
+                    speed: 1.2
+                });
+                console.log('Focused university at:', lat, lng);
+            } catch (e) {
+                console.error('focusUniversity error:', e);
+            }
+        };
+        window.setCampusLocation = window.focusUniversity;
+
+        // Default SDU places as fallback
+        const defaultPlaces = [
+            { locationKey: 'dogu-kampusu', title: 'Doğu Kampüsü', category: 'Kampus', latitude: 37.8285, longitude: 30.5345 },
+            { locationKey: 'bati-kampusu', title: 'Batı Kampüsü', category: 'Kampus', latitude: 37.829387, longitude: 30.526435 },
+            { locationKey: '100-yil', title: '100. Yıl Yerleşkesi', category: 'Kampus', latitude: 37.759684, longitude: 30.548229 },
+            { locationKey: 'iyas', title: 'Iyaş Park AVM', category: 'Sosyal', latitude: 37.782036, longitude: 30.544647 },
+            { locationKey: 'sehir-merkezi', title: 'Şehir Merkezi (Meydan)', category: 'Sosyal', latitude: 37.7630, longitude: 30.5547 },
+            { locationKey: 'otogar', title: 'Otogar', category: 'Ulasim', latitude: 37.810293, longitude: 30.537214 },
+            { locationKey: 'erkek-yurdu', title: 'Erkek Yurdu', category: 'Yurt', latitude: 37.782313, longitude: 30.561886 },
+            { locationKey: 'mihrihatun-kiz-yurdu', title: 'MihriHatun Kız Yurdu', category: 'Yurt', latitude: 37.854985, longitude: 30.531456 },
+            { locationKey: 'meydan-avm', title: 'Meydan AVM', category: 'Sosyal', latitude: 37.764732, longitude: 30.550920 },
+            { locationKey: 'sehir-hastanesi', title: 'Şehir Hastanesi', category: 'Sosyal', latitude: 37.776919, longitude: 30.561183 }
         ];
 
-        let selectedLocation = null;
-
-        // Add markers for each location
-        locations.forEach(location => {
-            const marker = L.marker([location.lat, location.lng], {
-                title: location.name
-            }).addTo(map);
-
-            // Create a custom icon (fallback simple marker)
-            // marker.setIcon(L.icon({ /* custom icon if needed */ }));
-
-            // Add click event
-            marker.on('click', function() {
-                selectedLocation = location;
-                showInfoPanel(location);
-            });
+        map.on('load', function () {
+            window.mapReady = true;
+            console.log('MapLibre GL Map ready');
+            window.loadCampusPlaces(defaultPlaces);
         });
 
-        // Show info panel
-        function showInfoPanel(location) {
-            document.getElementById('locationName').textContent = location.name;
-            document.getElementById('locationDesc').textContent = location.description;
-            const panel = document.getElementById('infoPanel');
-            panel.classList.add('active');
-        }
+        // Set user live location
+        window.setUserLocation = function (lat, lng) {
+            try {
+                lat = parseFloat(lat);
+                lng = parseFloat(lng);
+                const position = [lng, lat];
 
-        // Select location and send to app
-        function selectLocation() {
-            if (selectedLocation) {
-                const message = {
-                    type: 'locationSelected',
-                    location: selectedLocation.name,
-                    latitude: selectedLocation.lat,
-                    longitude: selectedLocation.lng
-                };
+                if (userMarker == null) {
+                    const element = document.createElement('div');
+                    element.className = 'user-marker';
 
-                // Try to post to native bridges first
-                if (typeof window.interop !== 'undefined' && typeof window.interop.selectLocation === 'function') {
-                    try { window.interop.selectLocation(JSON.stringify(message)); return; } catch(e) { }
+                    userMarker = new maplibregl.Marker(element)
+                        .setLngLat(position)
+                        .setPopup(new maplibregl.Popup({ offset: 25 }).setText('Konumunuz'))
+                        .addTo(map);
+                } else {
+                    userMarker.setLngLat(position);
                 }
 
-                if (typeof webkit !== 'undefined' && webkit.messageHandlers && webkit.messageHandlers.locationSelected) {
-                    try { webkit.messageHandlers.locationSelected.postMessage(message); return; } catch(e) { }
-                }
-
-                if (typeof Android !== 'undefined' && typeof Android.selectLocation === 'function') {
-                    try { Android.selectLocation(JSON.stringify(message)); return; } catch(e) { }
-                }
-
-                // Fallback: navigate to a special URL the app can intercept
-                try {
-                    var encoded = encodeURIComponent(JSON.stringify(message));
-                    window.location.href = 'app://locationSelected?data=' + encoded;
-                } catch (ex) {
-                    console.log('Selected Location:', selectedLocation.name);
-                }
-
-                // Close panel after selection
-                const panel = document.getElementById('infoPanel');
-                panel.classList.remove('active');
+                map.flyTo({ center: position, zoom: 15, speed: 1 });
+                console.log('User location updated to:', lat, lng);
+            } catch (error) {
+                console.error('setUserLocation error:', error);
             }
-        }
+        };
 
-        // Close panel when clicking outside
-        map.on('click', function() {
-            const panel = document.getElementById('infoPanel');
-            panel.classList.remove('active');
-        });
+        // Draw route polyline between coordinates
+        const routeSourceId = 'route-source';
+        const routeLayerId = 'route-layer';
+
+        window.drawRoute = function (routeCoordinates) {
+            try {
+                const convertedCoordinates = routeCoordinates.map(point => [parseFloat(point[1]), parseFloat(point[0])]);
+                const geojson = { type: 'Feature', geometry: { type: 'LineString', coordinates: convertedCoordinates } };
+
+                if (map.getSource(routeSourceId)) {
+                    map.getSource(routeSourceId).setData(geojson);
+                } else {
+                    map.addSource(routeSourceId, { type: 'geojson', data: geojson });
+                    map.addLayer({
+                        id: routeLayerId,
+                        type: 'line',
+                        source: routeSourceId,
+                        layout: { 'line-join': 'round', 'line-cap': 'round' },
+                        paint: { 'line-color': '#007AFF', 'line-width': 6, 'line-opacity': 0.9 }
+                    });
+                }
+
+                if (convertedCoordinates.length > 0) {
+                    const bounds = convertedCoordinates.reduce(
+                        (bounds, coord) => bounds.extend(coord),
+                        new maplibregl.LngLatBounds(convertedCoordinates[0], convertedCoordinates[0])
+                    );
+                    map.fitBounds(bounds, { padding: 60, maxZoom: 16, duration: 1500 });
+                }
+
+                console.log('Route drawn successfully');
+            } catch (error) {
+                console.error('drawRoute error:', error);
+            }
+        };
+
     </script>
 </body>
+
 </html>

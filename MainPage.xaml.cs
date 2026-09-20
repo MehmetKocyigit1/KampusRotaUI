@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using KampusRotaUI.Models;
 using KampusRotaUI.Services;
@@ -178,14 +178,19 @@ public partial class MainPage : ContentPage
     {
         try
         {
-            // Servisimizdeki yeni metodu çağırıyoruz
-            var rides = await _apiService.TumYolculuklariGetirAsync();
+            var userUniId = Preferences.Default.Get("UserUniversityId", 0);
+            int? filterUniId = userUniId > 0 ? userUniId : null;
+
+            var rides = await _apiService.TumYolculuklariGetirAsync(filterUniId);
             await DeleteExpiredRidesAsync(rides);
             var activeRides = rides
                 .Where(r => r.AktifMi && !r.SilindiMi)
                 .OrderByDescending(r => r.KalkisZamani >= DateTime.Now)
                 .ThenBy(r => r.KalkisZamani)
                 .ToList();
+
+            var uniName = Preferences.Default.Get("UserUniversityName", string.Empty);
+            var titleText = !string.IsNullOrWhiteSpace(uniName) ? $"{uniName} Yolculukları" : "Mevcut Yolculuklar";
 
             MainThread.BeginInvokeOnMainThread(() =>
             {
@@ -195,9 +200,9 @@ public partial class MainPage : ContentPage
                     Rides.Add(ride);
                 }
 
-                ResultsTitleLabel.Text = "Mevcut Yolculuklar";
+                ResultsTitleLabel.Text = titleText;
                 ResultsSubtitleLabel.Text = activeRides.Count == 0
-                    ? "Şu anda aktif ilan yok"
+                    ? "Bu kampüs için henüz aktif ilan yok"
                     : $"{activeRides.Count} aktif ilan listeleniyor";
                 ActiveFilterLabel.Text = "Kalkış ve varış seçerek kampüs rotalarını filtrele.";
             });
@@ -244,7 +249,9 @@ public partial class MainPage : ContentPage
 
         try
         {
-            var allRides = await _apiService.TumYolculuklariGetirAsync();
+            var userUniId = Preferences.Default.Get("UserUniversityId", 0);
+            int? filterUniId = userUniId > 0 ? userUniId : null;
+            var allRides = await _apiService.TumYolculuklariGetirAsync(filterUniId);
 
             // Filtrelemeyi yeni Türkçe özelliklere (KalkisNoktasi, KalkisZamani) göre yapıyoruz
             var filteredRides = allRides.Where(r =>

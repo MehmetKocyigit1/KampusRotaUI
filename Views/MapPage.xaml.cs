@@ -1,9 +1,23 @@
+using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Text.Json;
+using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Devices.Sensors;
+using KampusRotaUI.Models;
+using KampusRotaUI.Services;
 
 namespace KampusRotaUI.Views;
 
 public partial class MapPage : ContentPage
 {
+    private readonly ApiServices _apiServices = new();
+    private List<University> _universities = new();
+    private bool _isMapReady = false;
+
     public MapPage()
     {
         InitializeComponent();
@@ -23,7 +37,9 @@ public partial class MapPage : ContentPage
     private async Task InitializeMapAsync()
     {
         await LoadMapHtmlAsync();
-        await WaitForMapReadyAsync(TimeSpan.FromSeconds(8));
+        _isMapReady = await WaitForMapReadyAsync(TimeSpan.FromSeconds(8));
+        
+        await LoadUniversitiesAsync();
         StartLocationUpdates();
     }
 
@@ -35,11 +51,11 @@ public partial class MapPage : ContentPage
             using var reader = new System.IO.StreamReader(stream);
             var html = await reader.ReadToEndAsync();
             MapWebView.Source = new HtmlWebViewSource { Html = html };
-            JsLogLabel.Text = "map.html loaded";
+            JsLogLabel.Text = "Harita yüklendi";
         }
         catch (Exception ex)
         {
-            JsLogLabel.Text = "Failed to load map.html: " + ex.Message;
+            JsLogLabel.Text = "Harita yüklenemedi: " + ex.Message;
         }
     }
 
@@ -53,7 +69,7 @@ public partial class MapPage : ContentPage
                 var res = await MapWebView.EvaluateJavaScriptAsync("(function(){return window.mapReady===true;})()");
                 if (!string.IsNullOrWhiteSpace(res) && (res.Trim().ToLower().Contains("true")))
                 {
-                    JsLogLabel.Text = "map ready";
+                    JsLogLabel.Text = "Harita hazır";
                     return true;
                 }
             }
@@ -62,8 +78,61 @@ public partial class MapPage : ContentPage
             await Task.Delay(300);
         }
 
-        JsLogLabel.Text = "map not ready (timeout)";
+        JsLogLabel.Text = "Harita zaman aşımı";
         return false;
+    }
+
+    private async Task LoadUniversitiesAsync()
+    {
+        try
+        {
+            _universities = await _apiServices.GetUniversitiesAsync();
+            if (_universities != null && _universities.Count > 0)
+            {
+                UniversityPicker.ItemsSource = _universities;
+                // Default to the first university (e.g. Süleyman Demirel Üniversitesi)
+                UniversityPicker.SelectedIndex = 0;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Üniversite yükleme hatası: {ex.Message}");
+        }
+    }
+
+    private async void OnUniversitySelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (UniversityPicker.SelectedItem is not University selectedUni)
+            return;
+
+        if (!_isMapReady)
+        {
+            _isMapReady = await WaitForMapReadyAsync(TimeSpan.FromSeconds(3));
+            if (!_isMapReady) return;
+        }
+
+        try
+        {
+            // 1. Focus map camera to the selected university campus
+            var latStr = selectedUni.Latitude.ToString(CultureInfo.InvariantCulture);
+            var lngStr = selectedUni.Longitude.ToString(CultureInfo.InvariantCulture);
+            await MapWebView.EvaluateJavaScriptAsync($"focusUniversity({latStr}, {lngStr}, {selectedUni.DefaultZoom});");
+
+            // 2. Fetch and render campus place pins for this university
+            var locations = await _apiServices.GetCampusLocationsAsync(selectedUni.Id);
+            if (locations != null && locations.Count > 0)
+            {
+                var json = JsonSerializer.Serialize(locations);
+                var escapedJson = JsonSerializer.Serialize(json); // Escape for JavaScript argument
+                await MapWebView.EvaluateJavaScriptAsync($"loadCampusPlaces({escapedJson});");
+            }
+
+            JsLogLabel.Text = $"{selectedUni.Name} odaklandı ({locations?.Count ?? 0} durak)";
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Üniversite değiştirme hatası: {ex.Message}");
+        }
     }
 
     private async Task FetchJsLogs()
@@ -75,16 +144,13 @@ public partial class MapPage : ContentPage
             {
                 try
                 {
-                    var logs = System.Text.Json.JsonSerializer.Deserialize<List<JsLog>>(result);
+                    var logs = JsonSerializer.Deserialize<List<JsLog>>(result);
                     if (logs != null && logs.Count > 0)
                     {
-                        JsLogLabel.Text = string.Join('\n', logs.Take(3).Select(l => l.message));
+                        JsLogLabel.Text = string.Join('\n', logs.Take(2).Select(l => l.message));
                     }
                 }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine(ex);
-                }
+                catch { }
             }
         }
         catch { }
@@ -94,17 +160,12 @@ public partial class MapPage : ContentPage
     {
         try
         {
-            var ready = await WaitForMapReadyAsync(TimeSpan.FromSeconds(8));
-            if (!ready)
-            {
-                JsLogLabel.Text = "Map not ready, cannot set location";
-                return;
-            }
+            if (!_isMapReady) return;
 
             var status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
             if (status != PermissionStatus.Granted)
             {
-                JsLogLabel.Text = "Location permission denied";
+                JsLogLabel.Text = "Konum izni verilmedi";
                 return;
             }
 
@@ -115,12 +176,12 @@ public partial class MapPage : ContentPage
                 var lat = location.Latitude.ToString(CultureInfo.InvariantCulture);
                 var lng = location.Longitude.ToString(CultureInfo.InvariantCulture);
                 var js = $"setUserLocation({lat},{lng});";
-                try { await MapWebView.EvaluateJavaScriptAsync(js); } catch { JsLogLabel.Text = "JS setUserLocation error"; }
+                try { await MapWebView.EvaluateJavaScriptAsync(js); } catch { }
             }
         }
         catch (Exception ex)
         {
-            JsLogLabel.Text = "Location error: " + ex.Message;
+            JsLogLabel.Text = "Konum hatası: " + ex.Message;
         }
     }
 

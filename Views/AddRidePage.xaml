@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="KampusRotaUI.Views.AddRidePage"
@@ -16,8 +16,8 @@
                         <Label Text="+" TextColor="#D6EEFB" FontSize="24" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
                     </Border>
                     <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
-                        <Label Text="Yolculuk ilanı ver" FontSize="25" FontAttributes="Bold" TextColor="#1D9DE5" />
-                        <Label Text="Kampüs arkadaşlarınla yolculuğunu paylaş." FontSize="12" TextColor="#6B7280" />
+                        <Label x:Name="PageTitleLabel" Text="Yolculuk ilanı ver" FontSize="25" FontAttributes="Bold" TextColor="#1D9DE5" />
+                        <Label x:Name="PageSubtitleLabel" Text="Kampüs arkadaşlarınla yolculuğunu paylaş." FontSize="12" TextColor="#6B7280" />
                     </VerticalStackLayout>
                 </Grid>
 
@@ -94,6 +94,15 @@
 
                         <VerticalStackLayout Spacing="6">
                             <Label Text="İletişim telefonu (isteğe bağlı)" FontSize="12" FontAttributes="Bold" TextColor="#74777D" />
+                            <Border x:Name="RegisteredPhoneShareBorder" BackgroundColor="#F3FBFF" Stroke="#BDDDED" StrokeShape="RoundRectangle 14" Padding="12" IsVisible="False">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                                    <CheckBox x:Name="ShareRegisteredPhoneCheckBox" Color="#1D9DE5" VerticalOptions="Center" CheckedChanged="OnShareRegisteredPhoneChanged" />
+                                    <VerticalStackLayout Grid.Column="1" Spacing="1">
+                                        <Label Text="Profilimdeki telefon numaram paylaşılsın" FontSize="13" FontAttributes="Bold" TextColor="#111827" />
+                                        <Label x:Name="RegisteredPhoneDescriptionLabel" Text="Numaran otomatik olarak iletişim alanına eklenir." FontSize="11" TextColor="#6B7280" />
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </Border>
                             <Border Stroke="#BDDDED" StrokeThickness="1" StrokeShape="RoundRectangle 14" BackgroundColor="#EAF6FD" Padding="12,0" HeightRequest="52">
                                 <Entry x:Name="ContactPhoneEntry" Placeholder="05XX XXX XX XX" Keyboard="Telephone" TextColor="#111827" PlaceholderColor="#9CA3AF" />
                             </Border>
@@ -106,12 +115,12 @@
                             </Border>
                         </VerticalStackLayout>
 
-                        <Border BackgroundColor="#EAF6FD" Stroke="#BDDDED" StrokeShape="RoundRectangle 14" Padding="12">
+                        <Border x:Name="WomenOnlyBorder" BackgroundColor="#EAF6FD" Stroke="#BDDDED" StrokeShape="RoundRectangle 14" Padding="12">
                             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
-                                <CheckBox x:Name="WomenOnlyCheckBox" Color="#1D9DE5" VerticalOptions="Center" />
+                                <CheckBox x:Name="WomenOnlyCheckBox" Color="#1D9DE5" VerticalOptions="Center" CheckedChanged="OnWomenOnlyChanged" />
                                 <VerticalStackLayout Grid.Column="1" Spacing="1">
-                                    <Label Text="Sadece kadınlar" FontSize="13" FontAttributes="Bold" TextColor="#111827" />
-                                    <Label Text="İlanı kadın yolcular için görünür yap." FontSize="11" TextColor="#6B7280" />
+                                    <Label x:Name="WomenOnlyTitleLabel" Text="Sadece kadınlar" FontSize="13" FontAttributes="Bold" TextColor="#111827" />
+                                    <Label x:Name="WomenOnlyDescriptionLabel" Text="İlanı kadın yolcular için görünür yap." FontSize="11" TextColor="#6B7280" />
                                 </VerticalStackLayout>
                             </Grid>
                         </Border>
@@ -123,7 +132,8 @@
                             </Grid>
                         </Border>
 
-                        <Button Text="İlanı yayınla"
+                        <Button x:Name="SaveRideButton"
+                                Text="İlanı yayınla"
                                 Clicked="OnPublishClicked"
                                 BackgroundColor="#1D9DE5"
                                 TextColor="White"
@@ -138,21 +148,55 @@
 
         <Grid x:Name="MapContainer" Grid.Row="0" IsVisible="False">
             <WebView x:Name="MapWebView" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" />
-            <Button Text="Kapat"
-                    Clicked="OnCloseMapClicked"
-                    BackgroundColor="#EAF6FD"
-                    TextColor="#111827"
-                    FontAttributes="Bold"
-                    CornerRadius="18"
-                    Padding="18,0"
-                    HeightRequest="40"
-                    HorizontalOptions="End"
+
+            <!-- Floating Top Banner -->
+            <Border BackgroundColor="#EAF6FD"
+                    Stroke="#BDDDED"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 16"
+                    Margin="14,12,14,0"
+                    Padding="12,10"
                     VerticalOptions="Start"
-                    Margin="0,16,16,0" />
+                    HorizontalOptions="Fill">
+                <VerticalStackLayout Spacing="6">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" VerticalOptions="Center">
+                        <Label x:Name="MapHeaderLabel"
+                               Text="📍 Nokta Seçin (Pin'e Dokunun)"
+                               FontSize="14"
+                               FontAttributes="Bold"
+                               TextColor="#1D9DE5"
+                               VerticalOptions="Center" />
+                        <Button Grid.Column="1"
+                                Text="Kapat"
+                                Clicked="OnCloseMapClicked"
+                                BackgroundColor="#1D9DE5"
+                                TextColor="White"
+                                FontAttributes="Bold"
+                                CornerRadius="12"
+                                Padding="14,0"
+                                HeightRequest="32"
+                                VerticalOptions="Center" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <Label x:Name="MapSubHeaderLabel"
+                               Text="Pinlere dokunarak konumu belirleyin."
+                               FontSize="11"
+                               TextColor="#6B7280"
+                               VerticalOptions="Center" />
+                        <Picker x:Name="MapUniversityPicker"
+                                Grid.Column="1"
+                                Title="Üniversite Değiştir"
+                                ItemDisplayBinding="{Binding Name}"
+                                SelectedIndexChanged="OnMapUniversityPickerChanged"
+                                TextColor="#111827"
+                                FontSize="12"
+                                HeightRequest="32" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
             <Label x:Name="MapDebugLabel" TextColor="White" BackgroundColor="#66000000" Margin="10" VerticalOptions="Start" HorizontalOptions="Fill" IsVisible="False" />
         </Grid>
 
     </Grid>
 </ContentPage>
-
-

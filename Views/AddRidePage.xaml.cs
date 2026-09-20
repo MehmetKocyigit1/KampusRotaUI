@@ -1,6 +1,15 @@
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using System.Threading.Tasks;
 using KampusRotaUI.Models;
 using KampusRotaUI.Services;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Storage;
 
 namespace KampusRotaUI.Views;
 
@@ -8,13 +17,41 @@ public partial class AddRidePage : ContentPage
 {
     private const string MapAssetFileName = "map.html";
     private readonly ApiServices _apiService = new ApiServices();
-    private MapInterop _mapInterop;
+    private readonly Yolculuk? _editingRide;
+    private MapInterop? _mapInterop;
     private string _lastFocusedPickerName = "Departure";
     private string? _mapHtmlContent;
+    private string _registeredPhoneNumber = string.Empty;
+    private bool _isUpdatingRegisteredPhoneOption;
+    private bool _isUpdatingWomenOnlyAvailability;
+
+    private List<University> _universities = new();
+    private University? _currentMapUniversity;
+    private double? _departureLatitude;
+    private double? _departureLongitude;
+    private double? _destinationLatitude;
+    private double? _destinationLongitude;
 
     public AddRidePage()
     {
         InitializeComponent();
+        InitializePage();
+        ConfigureRegisteredPhoneOption();
+        ConfigureWomenOnlyOption();
+    }
+
+    public AddRidePage(Yolculuk ride)
+    {
+        InitializeComponent();
+        _editingRide = ride;
+        InitializePage();
+        ConfigureEditMode(ride);
+        ConfigureRegisteredPhoneOption();
+        ConfigureWomenOnlyOption();
+    }
+
+    private void InitializePage()
+    {
         _mapInterop = new MapInterop();
         _mapInterop.LocationSelected += OnMapLocationSelected;
 
@@ -25,16 +62,104 @@ public partial class AddRidePage : ContentPage
         MapWebView.Navigated += OnMapWebViewNavigated;
     }
 
-    private void OnDepartureLocationTapped(object? sender, TappedEventArgs e)
+    private void ConfigureEditMode(Yolculuk ride)
     {
-        _lastFocusedPickerName = "Departure";
-        ShowMapView();
+        Title = "İlanı Düzenle";
+        PageTitleLabel.Text = "Yolculuk ilanını düzenle";
+        PageSubtitleLabel.Text = "Yayınladığın ilan bilgilerini güncelle.";
+        SaveRideButton.Text = "İlanı güncelle";
+        TermsCheckBox.IsChecked = true;
+
+        _departureLatitude = ride.KalkisLatitude;
+        _departureLongitude = ride.KalkisLongitude;
+        _destinationLatitude = ride.VarisLatitude;
+        _destinationLongitude = ride.VarisLongitude;
+
+        SelectPickerValue(DeparturePicker, ride.KalkisNoktasi);
+        SelectPickerValue(DestinationPicker, ride.VarisNoktasi);
+        UpdateLocationLabels();
+
+        RideDatePicker.Date = ride.KalkisZamani.Date;
+        RideTimePicker.Time = ride.KalkisZamani.TimeOfDay;
+        PriceEntry.Text = ride.KisiBasiUcret.ToString("0.##");
+        SeatsEntry.Text = ride.BosKoltukSayisi.ToString();
+        ContactPhoneEntry.Text = ride.IletisimTelefonu;
+        DescriptionEditor.Text = ride.Aciklama;
+        WomenOnlyCheckBox.IsChecked = ride.SadeceKadinlarMi;
     }
 
-    private void OnDestinationLocationTapped(object? sender, TappedEventArgs e)
+    private void ConfigureRegisteredPhoneOption()
+    {
+        _registeredPhoneNumber = Preferences.Default.Get("UserPhone", string.Empty).Trim();
+        var hasRegisteredPhone = !string.IsNullOrWhiteSpace(_registeredPhoneNumber);
+
+        RegisteredPhoneShareBorder.IsVisible = hasRegisteredPhone;
+        if (!hasRegisteredPhone)
+        {
+            return;
+        }
+
+        RegisteredPhoneDescriptionLabel.Text = $"Profilindeki numara: {_registeredPhoneNumber}";
+
+        var currentPhone = ContactPhoneEntry.Text?.Trim() ?? string.Empty;
+        var usesRegisteredPhone = string.Equals(currentPhone, _registeredPhoneNumber, StringComparison.OrdinalIgnoreCase);
+
+        _isUpdatingRegisteredPhoneOption = true;
+        ShareRegisteredPhoneCheckBox.IsChecked = usesRegisteredPhone;
+        ContactPhoneEntry.IsEnabled = !usesRegisteredPhone;
+        _isUpdatingRegisteredPhoneOption = false;
+    }
+
+    private static void SelectPickerValue(Picker picker, string value)
+    {
+        if (!picker.Items.Contains(value))
+        {
+            picker.Items.Add(value);
+        }
+
+        picker.SelectedItem = value;
+    }
+
+    private void ConfigureWomenOnlyOption()
+    {
+        _isUpdatingWomenOnlyAvailability = true;
+
+        var isFemaleUser = IsCurrentUserFemale();
+        WomenOnlyCheckBox.IsEnabled = isFemaleUser;
+
+        if (!isFemaleUser)
+        {
+            WomenOnlyCheckBox.IsChecked = false;
+            WomenOnlyBorder.Opacity = 0.58;
+            WomenOnlyTitleLabel.TextColor = Color.FromArgb("#6B7280");
+            WomenOnlyDescriptionLabel.Text = "Bu seçenek yalnızca kadın üyeler tarafından kullanılabilir.";
+        }
+        else
+        {
+            WomenOnlyBorder.Opacity = 1;
+            WomenOnlyTitleLabel.TextColor = Color.FromArgb("#111827");
+            WomenOnlyDescriptionLabel.Text = "İlanı kadın yolcular için görünür yap.";
+        }
+
+        _isUpdatingWomenOnlyAvailability = false;
+    }
+
+    private async void OnDepartureLocationTapped(object? sender, TappedEventArgs e)
+    {
+        _lastFocusedPickerName = "Departure";
+        MapHeaderLabel.Text = "📍 Kalkış Noktası Seçin";
+        MapSubHeaderLabel.Text = "Haritadaki pinlere dokunarak kalkış yerini belirleyin.";
+        ShowMapView();
+        await SetupMapForSelectedUniversityAsync();
+    }
+
+    private async void OnDestinationLocationTapped(object? sender, TappedEventArgs e)
     {
         _lastFocusedPickerName = "Destination";
+        MapHeaderLabel.Text = "🎯 Varış Noktası Seçin";
+        MapSubHeaderLabel.Text = "Haritadaki pinlere dokunarak varış yerini belirleyin.";
         ShowMapView();
+        await SetupMapForSelectedUniversityAsync();
     }
 
     private void OnMapWebViewNavigating(object? sender, WebNavigatingEventArgs e)
@@ -45,7 +170,7 @@ public partial class AddRidePage : ContentPage
         }
 
         e.Cancel = true;
-        SelectLocationForCurrentPicker(selection.LocationName);
+        SelectLocationForCurrentPicker(selection.LocationName, selection.Latitude, selection.Longitude);
     }
 
     private void OnMapWebViewNavigated(object? sender, WebNavigatedEventArgs e)
@@ -86,16 +211,121 @@ public partial class AddRidePage : ContentPage
         return new HtmlWebViewSource { Html = html };
     }
 
-    private void OnMapLocationSelected(object? sender, MapLocationSelectedEventArgs e)
+    private async Task<bool> WaitForMapReadyAsync(TimeSpan timeout)
     {
-        SelectLocationForCurrentPicker(e.LocationName);
+        var sw = Stopwatch.StartNew();
+        while (sw.Elapsed < timeout)
+        {
+            try
+            {
+                var res = await MapWebView.EvaluateJavaScriptAsync("(function(){return window.mapReady===true;})()");
+                if (!string.IsNullOrWhiteSpace(res) && res.Trim().ToLower().Contains("true"))
+                {
+                    return true;
+                }
+            }
+            catch { }
+
+            await Task.Delay(250);
+        }
+        return false;
     }
 
-    private void SelectLocationForCurrentPicker(string locationName)
+    private async Task SetupMapForSelectedUniversityAsync()
+    {
+        try
+        {
+            if (_universities.Count == 0)
+            {
+                var unis = await _apiService.GetUniversitiesAsync();
+                if (unis != null && unis.Count > 0)
+                {
+                    _universities = unis;
+                    MapUniversityPicker.ItemsSource = _universities;
+                }
+            }
+
+            var userUniId = Preferences.Default.Get("UserUniversityId", 0);
+            University? targetUni = null;
+            if (userUniId > 0)
+            {
+                targetUni = _universities.FirstOrDefault(u => u.Id == userUniId);
+            }
+
+            if (targetUni == null && _universities.Count > 0)
+            {
+                targetUni = _universities[0];
+            }
+
+            if (targetUni != null)
+            {
+                _currentMapUniversity = targetUni;
+                MapUniversityPicker.SelectedItem = targetUni;
+                await FocusUniversityOnMapAsync(targetUni);
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Harita üniversite ayarlama hatası: {ex.Message}");
+        }
+    }
+
+    private async void OnMapUniversityPickerChanged(object sender, EventArgs e)
+    {
+        if (MapUniversityPicker.SelectedItem is University selectedUni)
+        {
+            _currentMapUniversity = selectedUni;
+            await FocusUniversityOnMapAsync(selectedUni);
+        }
+    }
+
+    private async Task FocusUniversityOnMapAsync(University uni)
+    {
+        var ready = await WaitForMapReadyAsync(TimeSpan.FromSeconds(3));
+        if (!ready) return;
+
+        try
+        {
+            var latStr = uni.Latitude.ToString(CultureInfo.InvariantCulture);
+            var lngStr = uni.Longitude.ToString(CultureInfo.InvariantCulture);
+            await MapWebView.EvaluateJavaScriptAsync($"focusUniversity({latStr}, {lngStr}, {uni.DefaultZoom});");
+
+            var locations = await _apiService.GetCampusLocationsAsync(uni.Id);
+            if (locations != null && locations.Count > 0)
+            {
+                var json = JsonSerializer.Serialize(locations);
+                var escapedJson = JsonSerializer.Serialize(json);
+                await MapWebView.EvaluateJavaScriptAsync($"loadCampusPlaces({escapedJson});");
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Harita odaklama hatası: {ex.Message}");
+        }
+    }
+
+    private void OnMapLocationSelected(object? sender, MapLocationSelectedEventArgs e)
+    {
+        SelectLocationForCurrentPicker(e.LocationName, e.Latitude, e.Longitude);
+    }
+
+    private void SelectLocationForCurrentPicker(string locationName, double? latitude = null, double? longitude = null)
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            Picker targetPicker = _lastFocusedPickerName == "Destination" ? DestinationPicker : DeparturePicker;
+            bool isDestination = _lastFocusedPickerName == "Destination";
+            Picker targetPicker = isDestination ? DestinationPicker : DeparturePicker;
+
+            if (isDestination)
+            {
+                _destinationLatitude = latitude;
+                _destinationLongitude = longitude;
+            }
+            else
+            {
+                _departureLatitude = latitude;
+                _departureLongitude = longitude;
+            }
 
             if (!targetPicker.Items.Contains(locationName))
             {
@@ -129,6 +359,42 @@ public partial class AddRidePage : ContentPage
     private void OnCloseMapClicked(object sender, EventArgs e)
     {
         ShowFormView();
+    }
+
+    private async void OnWomenOnlyChanged(object sender, CheckedChangedEventArgs e)
+    {
+        if (_isUpdatingWomenOnlyAvailability || !e.Value || IsCurrentUserFemale())
+        {
+            return;
+        }
+
+        _isUpdatingWomenOnlyAvailability = true;
+        WomenOnlyCheckBox.IsChecked = false;
+        _isUpdatingWomenOnlyAvailability = false;
+
+        await DisplayAlert("Sadece Kadınlar", "Bu seçeneği yalnızca kadın üyeler kullanabilir.", "Tamam");
+    }
+
+    private void OnShareRegisteredPhoneChanged(object sender, CheckedChangedEventArgs e)
+    {
+        if (_isUpdatingRegisteredPhoneOption || string.IsNullOrWhiteSpace(_registeredPhoneNumber))
+        {
+            return;
+        }
+
+        if (e.Value)
+        {
+            ContactPhoneEntry.Text = _registeredPhoneNumber;
+            ContactPhoneEntry.IsEnabled = false;
+            return;
+        }
+
+        if (string.Equals(ContactPhoneEntry.Text?.Trim(), _registeredPhoneNumber, StringComparison.OrdinalIgnoreCase))
+        {
+            ContactPhoneEntry.Text = string.Empty;
+        }
+
+        ContactPhoneEntry.IsEnabled = true;
     }
 
     private void UpdateLocationLabels()
@@ -210,10 +476,19 @@ public partial class AddRidePage : ContentPage
             return;
         }
 
-        var yeniYolculuk = new Yolculuk
+        var userUniId = Preferences.Default.Get("UserUniversityId", 0);
+        int? universityId = userUniId > 0 ? userUniId : (_currentMapUniversity?.Id ?? _editingRide?.UniversityId);
+
+        var kaydedilecekYolculuk = new Yolculuk
         {
+            Id = _editingRide?.Id ?? 0,
             KalkisNoktasi = kalkis,
+            KalkisLatitude = _departureLatitude ?? _editingRide?.KalkisLatitude,
+            KalkisLongitude = _departureLongitude ?? _editingRide?.KalkisLongitude,
             VarisNoktasi = varis,
+            VarisLatitude = _destinationLatitude ?? _editingRide?.VarisLatitude,
+            VarisLongitude = _destinationLongitude ?? _editingRide?.VarisLongitude,
+            UniversityId = universityId,
             KalkisZamani = RideDatePicker.Date.Add(RideTimePicker.Time),
             BosKoltukSayisi = koltukSayisi,
             KisiBasiUcret = ucret,
@@ -221,22 +496,27 @@ public partial class AddRidePage : ContentPage
             IletisimTelefonu = iletisimTelefonu,
             SadeceKadinlarMi = WomenOnlyCheckBox?.IsChecked ?? false,
             SurucuId = surucuId,
-            AktifMi = true,
-            SilindiMi = false
+            AktifMi = _editingRide?.AktifMi ?? true,
+            SilindiMi = _editingRide?.SilindiMi ?? false
         };
 
         try
         {
-            bool success = await _apiService.YolculukEkleAsync(yeniYolculuk, yeniYolculuk.SurucuId);
+            bool success = _editingRide == null
+                ? await _apiService.YolculukEkleAsync(kaydedilecekYolculuk, kaydedilecekYolculuk.SurucuId)
+                : await _apiService.YolculukGuncelleAsync(_editingRide.Id, kaydedilecekYolculuk, surucuId);
 
             if (success)
             {
-                await DisplayAlert("Başarılı", "Yolculuk ilanınız başarıyla yayınlandı! 🚗", "Harika");
+                var successMessage = _editingRide == null
+                    ? "Yolculuk ilanınız başarıyla yayınlandı! 🚗"
+                    : "Yolculuk ilanınız başarıyla güncellendi.";
+                await DisplayAlert("Başarılı", successMessage, "Harika");
                 await Navigation.PopAsync();
             }
             else
             {
-                await DisplayAlert("Hata", "İlan sunucuya gönderilemedi. Lütfen bağlantınızı kontrol edin.", "Tamam");
+                await DisplayAlert("Hata", "İlan kaydedilemedi. Bilgileri kontrol edip tekrar deneyin.", "Tamam");
             }
         }
         catch (Exception ex)
@@ -250,5 +530,11 @@ public partial class AddRidePage : ContentPage
     {
         var userIdText = Preferences.Default.Get("UserId", "0");
         return int.TryParse(userIdText, out userId) && userId > 0;
+    }
+
+    private static bool IsCurrentUserFemale()
+    {
+        var gender = Preferences.Default.Get("UserGender", string.Empty);
+        return string.Equals(gender?.Trim(), "Kadın", StringComparison.OrdinalIgnoreCase);
     }
 }

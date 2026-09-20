@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -192,11 +192,12 @@ public class ApiServices
         }
     }
 
-    public async Task<List<Yolculuk>> TumYolculuklariGetirAsync()
+    public async Task<List<Yolculuk>> TumYolculuklariGetirAsync(int? universityId = null)
     {
         try
         {
-            return await _httpClient.GetFromJsonAsync<List<Yolculuk>>("api/rides") ?? new List<Yolculuk>();
+            var url = universityId.HasValue ? $"api/rides?universityId={universityId.Value}" : "api/rides";
+            return await _httpClient.GetFromJsonAsync<List<Yolculuk>>(url) ?? new List<Yolculuk>();
         }
         catch (Exception ex)
         {
@@ -304,4 +305,57 @@ public class ApiServices
             return new();
         }
     }
+
+    public async Task<List<University>> GetUniversitiesAsync()
+    {
+        try
+        {
+            return await _httpClient.GetFromJsonAsync<List<University>>("api/universities") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine("ÜNİVERSİTE LİSTELEME HATASI: " + ex.Message);
+            return new();
+        }
+    }
+
+    public async Task<University?> GetUniversityByIdAsync(int id)
+    {
+        try
+        {
+            return await _httpClient.GetFromJsonAsync<University>($"api/universities/{id}");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine("ÜNİVERSİTE DETAY HATASI: " + ex.Message);
+            return null;
+        }
+    }
+
+    public async Task<List<CampusLocation>> GetCampusLocationsAsync(int universityId)
+    {
+        try
+        {
+            return await _httpClient.GetFromJsonAsync<List<CampusLocation>>($"api/universities/{universityId}/locations") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine("KAMPÜS NOKTALARI HATASI: " + ex.Message);
+            return new();
+        }
+    }
+
+    public async Task<University?> GetUniversityByEmailAsync(string email)
+    {
+        try
+        {
+            return await _httpClient.GetFromJsonAsync<University>($"api/universities/by-email?email={Uri.EscapeDataString(email)}");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine("E-POSTA İLE ÜNİVERSİTE BULMA HATASI: " + ex.Message);
+            return null;
+        }
+    }
 }
+

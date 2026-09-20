@@ -63,15 +63,24 @@
                                                 <Label Text="{Binding TarihFormatli}" FontSize="12" TextColor="#4B5563" />
                                                 <Label Text="{Binding BosKoltukSayisi, StringFormat='Boş koltuk: {0}'}" FontSize="12" TextColor="#1D9DE5" FontAttributes="Bold" />
                                             </VerticalStackLayout>
-                                            <Button Grid.Column="1"
-                                                    Text="Sil"
-                                                    Clicked="OnDeleteRideClicked"
-                                                    CommandParameter="{Binding .}"
-                                                    BackgroundColor="#FFE8E8"
-                                                    TextColor="#EF4444"
-                                                    FontAttributes="Bold"
-                                                    CornerRadius="12"
-                                                    HeightRequest="38" />
+                                            <VerticalStackLayout Grid.Column="1" Spacing="6">
+                                                <Button Text="Düzenle"
+                                                        Clicked="OnEditRideClicked"
+                                                        CommandParameter="{Binding .}"
+                                                        BackgroundColor="#EAF6FD"
+                                                        TextColor="#1D9DE5"
+                                                        FontAttributes="Bold"
+                                                        CornerRadius="12"
+                                                        HeightRequest="38" />
+                                                <Button Text="Sil"
+                                                        Clicked="OnDeleteRideClicked"
+                                                        CommandParameter="{Binding .}"
+                                                        BackgroundColor="#FFE8E8"
+                                                        TextColor="#EF4444"
+                                                        FontAttributes="Bold"
+                                                        CornerRadius="12"
+                                                        HeightRequest="38" />
+                                            </VerticalStackLayout>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>

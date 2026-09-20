@@ -12,9 +12,7 @@ public partial class Login : ContentPage
     public Login()
     {
         InitializeComponent();
-        Debug.WriteLine("LOGIN SAYFASI AÇILDI");
 
-        // Attach checkbox handler after InitializeComponent so RememberMeCheck is available
         RememberMeCheck.CheckedChanged += OnRememberMeChanged;
     }
 
@@ -22,7 +20,6 @@ public partial class Login : ContentPage
     {
         base.OnAppearing();
 
-        // Load saved credentials if user previously chose "Remember me"
         try
         {
             bool remember = Preferences.Default.Get("RememberMe", false);
@@ -78,17 +75,14 @@ public partial class Login : ContentPage
                 return;
             }
 
-            // API'ye gidiyoruz
             var kullanici = await _apiService.LoginAsync(email, sifre);
 
-            // KRİTİK KONTROL: Eğer API'den null döndüyse (Kullanıcı bulunamadıysa)
             if (kullanici == null)
             {
                 ShowError("Giriş yapılamadı. Bilgilerinizi kontrol edin veya hesabınızın aktif olduğundan emin olun.");
                 return;
             }
 
-            // Veriler null gelirse çökmemesi için ?? operatörünü kullanıyoruz
             var userId = kullanici.Id.ToString();
             var tamAd = kullanici.TamAd ?? "Kullanıcı";
             var userEmail = kullanici.Email ?? email;
@@ -103,7 +97,19 @@ public partial class Login : ContentPage
             Preferences.Default.Set("UserProfilePhotoUrl", kullanici.ProfilFotografiUrl ?? string.Empty);
             Preferences.Default.Set("UserRating", kullanici.OrtalamaPuan.ToString("0.0", CultureInfo.InvariantCulture));
 
-            // Handle Remember Me preference: save or remove credentials
+            if (kullanici.UniversityId.HasValue)
+            {
+                Preferences.Default.Set("UserUniversityId", kullanici.UniversityId.Value);
+            }
+            if (!string.IsNullOrEmpty(kullanici.UniversityName))
+            {
+                Preferences.Default.Set("UserUniversityName", kullanici.UniversityName);
+            }
+            if (!string.IsNullOrEmpty(kullanici.City))
+            {
+                Preferences.Default.Set("UserCity", kullanici.City);
+            }
+
             if (RememberMeCheck.IsChecked)
             {
                 Preferences.Default.Set("RememberMe", true);
@@ -119,17 +125,9 @@ public partial class Login : ContentPage
 
             Debug.WriteLine($"GİRİŞ BAŞARILI: {tamAd}");
 
-            // Shell yönlendirmesi
-            if (Shell.Current != null)
+            if (Application.Current is not null)
             {
-                await Shell.Current.GoToAsync("//MainPage");
-            }
-            else
-            {
-                if (Application.Current is not null)
-                {
-                    Application.Current.MainPage = new AppShell();
-                }
+                Application.Current.MainPage = new AppShell();
             }
         }
         catch (Exception ex)
@@ -161,14 +159,12 @@ public partial class Login : ContentPage
         {
             if (!e.Value)
             {
-                // If unchecked, remove stored credentials immediately
                 Preferences.Default.Set("RememberMe", false);
                 Preferences.Default.Remove("SavedEmail");
                 Preferences.Default.Remove("SavedPassword");
             }
             else
             {
-                // If checked, we don't save until successful login to avoid storing invalid data
                 Preferences.Default.Set("RememberMe", true);
             }
         }

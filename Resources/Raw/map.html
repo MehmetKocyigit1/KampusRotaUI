@@ -4,9 +4,9 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>KampusRota</title>
+    <title>KampusRota Harita</title>
 
-    <!-- MAPLIBRE -->
+    <!-- MAPLIBRE GL JS (100% Free & Open Source OpenStreetMap) -->
     <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
     <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
 
@@ -18,7 +18,8 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f5f5f7;
         }
 
         #map {
@@ -33,59 +34,87 @@
             border-radius: 50%;
             background: #007AFF;
             border: 3px solid white;
-            box-shadow: 0 0 10px rgba(0,122,255,0.7);
+            box-shadow: 0 0 10px rgba(0, 122, 255, 0.7);
         }
+
         .user-marker::after {
             content: '';
             position: absolute;
             left: 50%;
             top: 50%;
             transform: translate(-50%, -50%);
-            width: 28px;
-            height: 28px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            background: rgba(0,122,255,0.15);
+            background: rgba(0, 122, 255, 0.2);
             animation: pulse 1.6s infinite;
             z-index: -1;
         }
+
         @keyframes pulse {
-            0% { transform: translate(-50%, -50%) scale(0.6); opacity: 0.9 }
-            70% { transform: translate(-50%, -50%) scale(1.6); opacity: 0 }
-            100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0 }
+            0% {
+                transform: translate(-50%, -50%) scale(0.6);
+                opacity: 0.9;
+            }
+            70% {
+                transform: translate(-50%, -50%) scale(1.6);
+                opacity: 0;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1.6);
+                opacity: 0;
+            }
         }
 
         .pin-marker {
-            width: 24px;
-            height: 32px;
+            width: 26px;
+            height: 34px;
             display: block;
             cursor: pointer;
-            transition: transform 0.12s ease;
+            transition: transform 0.15s ease;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
         }
 
         .pin-marker:hover,
         .pin-marker:focus {
-            transform: translateY(-2px) scale(1.06);
+            transform: translateY(-4px) scale(1.1);
             outline: none;
         }
 
         .place-label {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
             background: white;
-            color: #111;
-            padding: 6px 10px;
-            border-radius: 12px;
-            font-size: 13px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-            border: 1px solid rgba(0,0,0,0.06);
+            color: #1c1c1e;
+            padding: 5px 9px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+            border: 1px solid rgba(0, 0, 0, 0.08);
             white-space: nowrap;
             cursor: pointer;
             user-select: none;
+            transition: transform 0.15s ease;
+        }
+
+        .place-label:hover {
+            transform: translateY(-2px);
+        }
+
+        .category-badge {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+            display: inline-block;
         }
 
         .maplibregl-popup-content {
             border-radius: 12px;
             padding: 10px 14px;
-            font-size: 14px;
+            font-size: 13px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
         }
     </style>
 </head>
@@ -95,92 +124,92 @@
     <div id="map"></div>
 
     <script>
-        (function(){
+        (function () {
             window.__consoleLogs = [];
-            ['log','info','warn','error'].forEach(function(level){
+            ['log', 'info', 'warn', 'error'].forEach(function (level) {
                 const orig = console[level];
-                console[level] = function(){
-                    try{
-                        const args = Array.prototype.slice.call(arguments).map(function(a){
-                            try { return (typeof a === 'object') ? JSON.stringify(a) : String(a); } catch(e){ return String(a); }
+                console[level] = function () {
+                    try {
+                        const args = Array.prototype.slice.call(arguments).map(function (a) {
+                            try { return (typeof a === 'object') ? JSON.stringify(a) : String(a); } catch (e) { return String(a); }
                         });
                         window.__consoleLogs.push({ level: level, message: args.join(' ') });
-                    }catch(e){}
-                    if(orig && orig.apply) orig.apply(console, arguments);
+                    } catch (e) { }
+                    if (orig && orig.apply) orig.apply(console, arguments);
                 };
             });
-            window.getAndClearLogs = function(){ const copy = window.__consoleLogs.slice(); window.__consoleLogs.length = 0; return copy; };
+            window.getAndClearLogs = function () {
+                const copy = window.__consoleLogs.slice();
+                window.__consoleLogs.length = 0;
+                return copy;
+            };
         })();
 
         window.mapReady = false;
 
-        const ispartaCenter = [30.5537, 37.7648];
-        const ispartaSouthWest = [30.40, 37.68];
-        const ispartaNorthEast = [30.70, 37.90];
+        // Default to Turkey bounding box (Users can view anywhere across Turkey)
+        const turkeySouthWest = [25.5, 35.8];
+        const turkeyNorthEast = [44.8, 42.2];
+        const turkeyBounds = new maplibregl.LngLatBounds(turkeySouthWest, turkeyNorthEast);
 
-        const maxBounds = new maplibregl.LngLatBounds(
-            ispartaSouthWest,
-            ispartaNorthEast
-        );
+        // Initial default center: Süleyman Demirel Üniversitesi / Isparta
+        const defaultCenter = [30.5345, 37.8285];
 
         const map = new maplibregl.Map({
             container: "map",
             style: {
                 version: 8,
                 sources: {
-                    'osm-tiles': {
+                    'esri-tiles': {
                         type: 'raster',
-                        tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+                        tiles: [
+                            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}'
+                        ],
                         tileSize: 256,
-                        attribution: '© OpenStreetMap contributors'
+                        attribution: '© Esri, HERE, Garmin, OpenStreetMap contributors'
                     }
                 },
                 layers: [
-                    { id: 'osm-tiles', type: 'raster', source: 'osm-tiles' }
+                    { id: 'esri-tiles', type: 'raster', source: 'esri-tiles' }
                 ]
             },
-            center: ispartaCenter,
-            zoom: 12,
-            minZoom: 10,
+            center: defaultCenter,
+            zoom: 14,
+            minZoom: 5,
             maxZoom: 18,
             renderWorldCopies: false
         });
 
-        map.on('load', function(){
-            try{
-                map.setMaxBounds(maxBounds);
-                window.mapReady = true;
-                console.log('Map loaded and bounds set');
-                addImportantPlaceMarkers();
-            }catch(e){console.error('setMaxBounds error', e)}
-        });
+        // Set max bounds to Turkey so user doesn't get lost abroad, but can move freely inside Turkey
+        map.setMaxBounds(turkeyBounds);
 
         map.addControl(
             new maplibregl.NavigationControl(),
             "top-right"
         );
 
-        console.log("KampusRota Map Initialized");
+        let currentMarkers = [];
+        let userMarker = null;
 
-        const importantPlaces = [
-            { key: 'iyas', title: 'Iya\u015f', coords: [30.544646520371813, 37.7820357443819] },
-            { key: 'dogu-kampusu', title: 'Do\u011fu Kamp\u00fcs\u00fc', coords: [30.5345, 37.8285] },
-            { key: 'bati-kampusu', title: 'Bat\u0131 Kamp\u00fcs\u00fc', coords: [30.52643484819006, 37.829387079488605] },
-            { key: '100-yil', title: '100. Y\u0131l Yerle\u015fkesi', coords: [30.548229307533997, 37.759683693975894] },
-            { key: 'erkek-yurdu', title: 'Erkek Yurdu', coords: [30.56188560473612, 37.782313447651674] },
-            { key: 'mihrihatun-kiz-yurdu', title: 'MihriHatun K\u0131z Yurdu', coords: [30.53145637770997, 37.85498503730966] },
-            { key: 'sehir-merkezi', title: '\u015eehir Merkezi (Meydan)', coords: [30.5547, 37.7630] },
-            { key: 'otogar', title: 'Otogar', coords: [30.537213639241752, 37.810292530456906] },
-            { key: 'meydan_avm', title: 'Meydan Avm', coords: [30.550919685706187, 37.764732204804034] }, 
-            { key: 'gokcay', title: 'Gökçay Mesireliği', coords: [30.546475495545454, 37.74810017484874] },
-            { key: 'hastane', title: 'Şehir Hastanesi', coords: [30.56118321983313, 37.77691909029531] }
-        ];
+        // Colors per category
+        const categoryColors = {
+            'Kampus': '#007AFF', // Blue
+            'Yurt': '#34C759',    // Green
+            'Ulasim': '#FF9500',  // Orange
+            'Sosyal': '#AF52DE',  // Purple
+            'Diger': '#8E8E93'    // Gray
+        };
 
-        function createPinElement() {
+        function getCategoryColor(category) {
+            return categoryColors[category] || '#FF6A00';
+        }
+
+        function createPinElement(category) {
+            const color = getCategoryColor(category);
             const svg = `
                 <svg class="pin-marker" viewBox="0 0 24 32" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 0C7 0 3.5 3.6 3.5 8.1c0 5.9 7.8 15.8 7.9 15.9.2-.1 7.9-10 7.9-15.9C20.5 3.6 17 0 12 0z" fill="#FF6A00" stroke="#fff" stroke-width="1"/>
-                  <circle cx="12" cy="8.1" r="3" fill="#fff"/>
+                  <path d="M12 0C7 0 3.5 3.6 3.5 8.1c0 5.9 7.8 15.8 7.9 15.9.2-.1 7.9-10 7.9-15.9C20.5 3.6 17 0 12 0z" fill="${color}" stroke="#fff" stroke-width="1.5"/>
+                  <circle cx="12" cy="8.1" r="3.5" fill="#fff"/>
                 </svg>`;
             const wrapper = document.createElement('div');
             wrapper.innerHTML = svg;
@@ -193,10 +222,10 @@
         function sendLocationSelection(place) {
             const message = {
                 type: 'locationSelected',
-                locationKey: place.key,
-                location: place.title,
-                latitude: place.coords[1],
-                longitude: place.coords[0]
+                locationKey: place.locationKey || place.key || '',
+                location: place.title || place.location || '',
+                latitude: place.latitude !== undefined ? place.latitude : place.coords[1],
+                longitude: place.longitude !== undefined ? place.longitude : place.coords[0]
             };
 
             const encoded = encodeURIComponent(JSON.stringify(message));
@@ -204,13 +233,13 @@
         }
 
         function bindSelection(element, place) {
-            element.setAttribute('aria-label', place.title + ' seç');
-            element.addEventListener('click', function(event) {
+            element.setAttribute('aria-label', (place.title || place.location) + ' seç');
+            element.addEventListener('click', function (event) {
                 event.preventDefault();
                 event.stopPropagation();
                 sendLocationSelection(place);
             });
-            element.addEventListener('keydown', function(event) {
+            element.addEventListener('keydown', function (event) {
                 if (event.key === 'Enter' || event.key === ' ') {
                     event.preventDefault();
                     sendLocationSelection(place);
@@ -218,46 +247,104 @@
             });
         }
 
-        function addImportantPlaceMarkers() {
+        // Dynamically loads campus place markers from API JSON
+        window.loadCampusPlaces = function (places) {
             try {
-                importantPlaces.forEach(place => {
-                    const pinEl = createPinElement();
+                if (typeof places === 'string') {
+                    places = JSON.parse(places);
+                }
+
+                // Remove existing markers
+                currentMarkers.forEach(m => m.remove());
+                currentMarkers = [];
+
+                if (!places || !Array.isArray(places)) {
+                    console.warn('places is not an array');
+                    return;
+                }
+
+                places.forEach(place => {
+                    const lat = place.latitude !== undefined ? place.latitude : (place.coords ? place.coords[1] : null);
+                    const lng = place.longitude !== undefined ? place.longitude : (place.coords ? place.coords[0] : null);
+                    if (lat == null || lng == null) return;
+
+                    const coords = [parseFloat(lng), parseFloat(lat)];
+                    const category = place.category || 'Kampus';
+                    const color = getCategoryColor(category);
+
+                    const pinEl = createPinElement(category);
                     bindSelection(pinEl, place);
 
                     const labelEl = document.createElement('div');
                     labelEl.className = 'place-label';
-                    labelEl.textContent = place.title;
+                    labelEl.innerHTML = `<span class="category-badge" style="background-color:${color}"></span>${place.title || place.location}`;
                     labelEl.setAttribute('role', 'button');
                     labelEl.setAttribute('tabindex', '0');
                     bindSelection(labelEl, place);
 
-                    new maplibregl.Marker(pinEl, { offset: [0, -16] })
-                        .setLngLat(place.coords)
+                    const pinMarker = new maplibregl.Marker(pinEl, { offset: [0, -16] })
+                        .setLngLat(coords)
                         .addTo(map);
 
-                    new maplibregl.Marker(labelEl, { offset: [0, -40] })
-                        .setLngLat(place.coords)
+                    const labelMarker = new maplibregl.Marker(labelEl, { offset: [0, -42] })
+                        .setLngLat(coords)
                         .addTo(map);
+
+                    currentMarkers.push(pinMarker, labelMarker);
                 });
-                console.log('Important place markers added');
+
+                console.log('Loaded ' + places.length + ' campus place markers dynamically');
             } catch (e) {
-                console.error('addImportantPlaceMarkers error', e);
+                console.error('loadCampusPlaces error:', e);
             }
-        }
+        };
 
-        let userMarker = null;
+        // Smoothly focuses map to a university campus
+        window.focusUniversity = function (lat, lng, zoom) {
+            try {
+                lat = parseFloat(lat);
+                lng = parseFloat(lng);
+                zoom = zoom ? parseInt(zoom) : 14;
 
-        function setUserLocation(lat, lng) {
+                map.flyTo({
+                    center: [lng, lat],
+                    zoom: zoom,
+                    essential: true,
+                    speed: 1.2
+                });
+                console.log('Focused university at:', lat, lng);
+            } catch (e) {
+                console.error('focusUniversity error:', e);
+            }
+        };
+        window.setCampusLocation = window.focusUniversity;
+
+        // Default SDU places as fallback
+        const defaultPlaces = [
+            { locationKey: 'dogu-kampusu', title: 'Doğu Kampüsü', category: 'Kampus', latitude: 37.8285, longitude: 30.5345 },
+            { locationKey: 'bati-kampusu', title: 'Batı Kampüsü', category: 'Kampus', latitude: 37.829387, longitude: 30.526435 },
+            { locationKey: '100-yil', title: '100. Yıl Yerleşkesi', category: 'Kampus', latitude: 37.759684, longitude: 30.548229 },
+            { locationKey: 'iyas', title: 'Iyaş Park AVM', category: 'Sosyal', latitude: 37.782036, longitude: 30.544647 },
+            { locationKey: 'sehir-merkezi', title: 'Şehir Merkezi (Meydan)', category: 'Sosyal', latitude: 37.7630, longitude: 30.5547 },
+            { locationKey: 'otogar', title: 'Otogar', category: 'Ulasim', latitude: 37.810293, longitude: 30.537214 },
+            { locationKey: 'erkek-yurdu', title: 'Erkek Yurdu', category: 'Yurt', latitude: 37.782313, longitude: 30.561886 },
+            { locationKey: 'mihrihatun-kiz-yurdu', title: 'MihriHatun Kız Yurdu', category: 'Yurt', latitude: 37.854985, longitude: 30.531456 },
+            { locationKey: 'meydan-avm', title: 'Meydan AVM', category: 'Sosyal', latitude: 37.764732, longitude: 30.550920 },
+            { locationKey: 'sehir-hastanesi', title: 'Şehir Hastanesi', category: 'Sosyal', latitude: 37.776919, longitude: 30.561183 }
+        ];
+
+        map.on('load', function () {
+            window.mapReady = true;
+            console.log('MapLibre GL Map ready');
+            window.loadCampusPlaces(defaultPlaces);
+        });
+
+        // Set user live location
+        window.setUserLocation = function (lat, lng) {
             try {
                 lat = parseFloat(lat);
                 lng = parseFloat(lng);
                 const position = [lng, lat];
-
-                if (!maxBounds.contains(position)) {
-                    map.flyTo({ center: ispartaCenter, zoom: 12, speed: 0.8 });
-                    console.warn('User outside Isparta bounds');
-                    return;
-                }
 
                 if (userMarker == null) {
                     const element = document.createElement('div');
@@ -272,20 +359,19 @@
                 }
 
                 map.flyTo({ center: position, zoom: 15, speed: 1 });
-                console.log('User location updated');
-
+                console.log('User location updated to:', lat, lng);
             } catch (error) {
                 console.error('setUserLocation error:', error);
             }
-        }
+        };
 
+        // Draw route polyline between coordinates
         const routeSourceId = 'route-source';
         const routeLayerId = 'route-layer';
 
-        function drawRoute(routeCoordinates) {
+        window.drawRoute = function (routeCoordinates) {
             try {
                 const convertedCoordinates = routeCoordinates.map(point => [parseFloat(point[1]), parseFloat(point[0])]);
-
                 const geojson = { type: 'Feature', geometry: { type: 'LineString', coordinates: convertedCoordinates } };
 
                 if (map.getSource(routeSourceId)) {
@@ -302,20 +388,20 @@
                 }
 
                 if (convertedCoordinates.length > 0) {
-                    const bounds = convertedCoordinates.reduce((bounds, coord) => bounds.extend(coord), new maplibregl.LngLatBounds(convertedCoordinates[0], convertedCoordinates[0]));
-                    const fitted = bounds.intersect(maxBounds) || bounds;
-                    map.fitBounds(fitted, { padding: 60, maxZoom: 16, duration: 1500 });
+                    const bounds = convertedCoordinates.reduce(
+                        (bounds, coord) => bounds.extend(coord),
+                        new maplibregl.LngLatBounds(convertedCoordinates[0], convertedCoordinates[0])
+                    );
+                    map.fitBounds(bounds, { padding: 60, maxZoom: 16, duration: 1500 });
                 }
 
-                console.log('Route drawn');
+                console.log('Route drawn successfully');
             } catch (error) {
                 console.error('drawRoute error:', error);
             }
-        }
-
-        window.setUserLocation = setUserLocation;
-        window.drawRoute = drawRoute;
+        };
 
     </script>
 </body>
+
 </html>
