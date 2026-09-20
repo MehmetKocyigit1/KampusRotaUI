@@ -613,8 +613,9 @@
                 pinWrap.className = 'pin-wrapper';
                 pinWrap.innerHTML = createPinSvg(meta.color);
                 pinWrap.onclick = function (e) {
+                    e.preventDefault();
                     e.stopPropagation();
-                    showPlaceSheet(place);
+                    sendLocationSelection(place);
                 };
 
                 // 2. Metin Etiketi (Pin Altında Görünür)
@@ -622,8 +623,9 @@
                 tagEl.className = 'place-tag';
                 tagEl.innerHTML = `<span class="category-dot" style="background-color:${meta.color}"></span>${place.title || place.location}`;
                 tagEl.onclick = function (e) {
+                    e.preventDefault();
                     e.stopPropagation();
-                    showPlaceSheet(place);
+                    sendLocationSelection(place);
                 };
 
                 const pinMarker = new maplibregl.Marker(pinWrap, { offset: [0, -16] })
@@ -639,48 +641,24 @@
         }
 
         // ==========================================
-        // 3. ALT BİLGİ KARTI & SEÇİM MEKANİZMASI
+        // 3. SEÇİM MEKANİZMASI & C# İLETİŞİMİ
         // ==========================================
-        function showPlaceSheet(place) {
-            currentSelectedPlace = place;
-            const meta = getCategoryMeta(place.category);
-
-            const badge = document.getElementById('sheetCategoryBadge');
-            badge.textContent = meta.label;
-            badge.style.backgroundColor = meta.color;
-
-            document.getElementById('sheetTitle').textContent = place.title || place.location || 'Konum';
-            document.getElementById('sheetDesc').textContent = place.description || `${meta.label} · Rota noktası olarak kullanılabilir`;
-
-            const sheet = document.getElementById('selectionSheet');
-            sheet.classList.add('visible');
-
-            // Kamerayı hafifçe yukarı alarak pinin kart arkasında kalmasını engelle
-            const lat = place.latitude !== undefined ? place.latitude : place.coords[1];
-            const lng = place.longitude !== undefined ? place.longitude : place.coords[0];
-            map.flyTo({ center: [parseFloat(lng), parseFloat(lat) - 0.003], speed: 0.8 });
-        }
-
-        function closeSheet() {
-            document.getElementById('selectionSheet').classList.remove('visible');
-            currentSelectedPlace = null;
-        }
-
-        function confirmCurrentSelection() {
-            if (!currentSelectedPlace) return;
-            sendLocationSelection(currentSelectedPlace);
-        }
-
         function sendLocationSelection(place) {
+            const locName = place.title || place.location || place.name || '';
+            const lat = place.latitude !== undefined ? parseFloat(place.latitude) : (place.coords ? parseFloat(place.coords[1]) : 0);
+            const lng = place.longitude !== undefined ? parseFloat(place.longitude) : (place.coords ? parseFloat(place.coords[0]) : 0);
+            const key = place.locationKey || place.key || '';
+
             const message = {
                 type: 'locationSelected',
-                locationKey: place.locationKey || place.key || '',
-                location: place.title || place.location || '',
-                latitude: place.latitude !== undefined ? place.latitude : (place.coords ? place.coords[1] : 0),
-                longitude: place.longitude !== undefined ? place.longitude : (place.coords ? place.coords[0] : 0)
+                locationKey: key,
+                location: locName,
+                latitude: lat,
+                longitude: lng
             };
 
             const jsonStr = JSON.stringify(message);
+            const encoded = encodeURIComponent(jsonStr);
 
             // 1. C# MAUI Windows WebView2 PostMessage
             try {
@@ -689,19 +667,16 @@
                 }
             } catch (e) { }
 
-            // 2. App URL Scheme Navigating Fallback
+            // 2. Local HTTPS Navigation (Intercepted reliably by MapWebView.Navigating on Windows & Mobile)
             try {
-                const encoded = encodeURIComponent(jsonStr);
-                window.location.href = 'app://locationSelected?data=' + encoded;
+                window.location.href = 'https://kampusrota.local/locationSelected?data=' + encoded;
             } catch (e) { }
 
-            closeSheet();
+            // 3. App URL Scheme Fallback
+            try {
+                window.location.href = 'app://locationSelected?data=' + encoded;
+            } catch (e) { }
         }
-
-        // Boş alana tıklanınca kartı kapat
-        map.on('click', function () {
-            closeSheet();
-        });
 
         // ==========================================
         // 4. ÜNİVERSİTE DEĞİŞTİRME & ODAKLANMA
@@ -750,9 +725,14 @@
         // ==========================================
         // 5. DIŞARIDAN (C# MAUI) ÇAĞRILABİLEN FONKSİYONLAR
         // ==========================================
+        let currentUniId = null;
 
         // ID veya İsme Göre Üniversiteye Odaklan
         window.selectUniversityById = function (id) {
+            currentUniId = id;
+            if (!window.mapReady) {
+                return true; // Harita yüklenince otomatik açılacak
+            }
             const uni = CAMPUS_CATALOG.find(u => String(u.id) === String(id));
             if (uni) {
                 focusAndLoadUniversity(uni);
@@ -790,8 +770,11 @@
             window.mapReady = true;
             populateDropdown(CAMPUS_CATALOG);
 
-            // Varsayılan olarak ilk üniversiteyi (Isparta SDÜ) yükle
-            focusAndLoadUniversity(CAMPUS_CATALOG[0]);
+            if (currentUniId) {
+                window.selectUniversityById(currentUniId);
+            } else {
+                focusAndLoadUniversity(CAMPUS_CATALOG[0]);
+            }
             console.log('KampusRota MapLibre Multi-Campus Map Ready with 18 Universities');
         });
     </script>

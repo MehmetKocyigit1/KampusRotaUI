@@ -24,6 +24,31 @@
                 <Border BackgroundColor="#EAF6FD" Stroke="#BDDDED" StrokeThickness="1" StrokeShape="RoundRectangle 18" Padding="16">
                     <VerticalStackLayout Spacing="14">
 
+                        <!-- Active University Card -->
+                        <Border BackgroundColor="#F3FBFF"
+                                Stroke="#BDDDED"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 16"
+                                Padding="12,8">
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" VerticalOptions="Center">
+                                <Label Text="🎓" FontSize="18" VerticalOptions="Center" />
+                                <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                    <Label Text="İlan Verilen Kampüs" FontSize="10" TextColor="#6B7280" />
+                                    <Label x:Name="FormUniversityLabel" Text="Üniversite Seçin" FontSize="13" FontAttributes="Bold" TextColor="#102A43" LineBreakMode="TailTruncation" />
+                                </VerticalStackLayout>
+                                <Picker x:Name="FormUniversityPicker"
+                                        Grid.Column="2"
+                                        Title="Değiştir"
+                                        ItemDisplayBinding="{Binding Name}"
+                                        SelectedIndexChanged="OnFormUniversityPickerChanged"
+                                        TextColor="#1D9DE5"
+                                        FontAttributes="Bold"
+                                        FontSize="12"
+                                        HeightRequest="36"
+                                        VerticalOptions="Center" />
+                            </Grid>
+                        </Border>
+
                         <Label Text="Rota bilgileri" FontSize="12" FontAttributes="Bold" TextColor="#74777D" />
 
                         <Border Stroke="#BDDDED" StrokeThickness="1" StrokeShape="RoundRectangle 16" BackgroundColor="#F3FBFF" Padding="13,0" HeightRequest="54">
@@ -127,53 +152,28 @@
         <Grid x:Name="MapContainer" Grid.Row="0" IsVisible="False">
             <WebView x:Name="MapWebView" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" />
 
-            <!-- Floating Top Banner -->
-            <Border BackgroundColor="#EAF6FD"
-                    Stroke="#BDDDED"
-                    StrokeThickness="1"
-                    StrokeShape="RoundRectangle 16"
-                    Margin="14,12,14,0"
-                    Padding="12,10"
-                    VerticalOptions="Start"
-                    HorizontalOptions="Fill">
-                <VerticalStackLayout Spacing="6">
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" VerticalOptions="Center">
-                        <Label x:Name="MapHeaderLabel"
-                               Text="📍 Nokta Seçin (Pin'e Dokunun)"
-                               FontSize="14"
-                               FontAttributes="Bold"
-                               TextColor="#1D9DE5"
-                               VerticalOptions="Center" />
-                        <Button Grid.Column="1"
-                                Text="Kapat"
-                                Clicked="OnCloseMapClicked"
-                                BackgroundColor="#1D9DE5"
-                                TextColor="White"
-                                FontAttributes="Bold"
-                                CornerRadius="12"
-                                Padding="14,0"
-                                HeightRequest="32"
-                                VerticalOptions="Center" />
-                    </Grid>
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                        <Label x:Name="MapSubHeaderLabel"
-                               Text="Pinlere dokunarak konumu belirleyin."
-                               FontSize="11"
-                               TextColor="#6B7280"
-                               VerticalOptions="Center" />
-                        <Picker x:Name="MapUniversityPicker"
-                                Grid.Column="1"
-                                Title="Üniversite Değiştir"
-                                ItemDisplayBinding="{Binding Name}"
-                                SelectedIndexChanged="OnMapUniversityPickerChanged"
-                                TextColor="#111827"
-                                FontSize="12"
-                                HeightRequest="32" />
-                    </Grid>
-                </VerticalStackLayout>
-            </Border>
+            <!-- Clean Floating Control Strip -->
+            <Grid VerticalOptions="Start" Padding="14,10" ColumnDefinitions="Auto,*,Auto" InputTransparent="False">
+                <Border BackgroundColor="#E6102A43" Stroke="Transparent" StrokeShape="RoundRectangle 18" Padding="14,6" VerticalOptions="Center">
+                    <Label x:Name="MapHeaderLabel" Text="📍 Nokta Seçin (Pin'e Dokunun)" FontSize="12" FontAttributes="Bold" TextColor="White" VerticalOptions="Center" />
+                </Border>
 
-            <Label x:Name="MapDebugLabel" TextColor="White" BackgroundColor="#66000000" Margin="10" VerticalOptions="Start" HorizontalOptions="Fill" IsVisible="False" />
+                <Button Grid.Column="2"
+                        Text="✕ Kapat"
+                        Clicked="OnCloseMapClicked"
+                        BackgroundColor="#1D9DE5"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        CornerRadius="16"
+                        Padding="14,0"
+                        HeightRequest="36"
+                        HorizontalOptions="End"
+                        VerticalOptions="Center">
+                    <Button.Shadow>
+                        <Shadow Brush="#40000000" Offset="0,2" Radius="6" Opacity="0.3" />
+                    </Button.Shadow>
+                </Button>
+            </Grid>
         </Grid>
 
     </Grid>

@@ -50,6 +50,13 @@ public partial class MapPage : ContentPage
             using var stream = await FileSystem.OpenAppPackageFileAsync("map.html");
             using var reader = new System.IO.StreamReader(stream);
             var html = await reader.ReadToEndAsync();
+
+            var userUniId = Preferences.Default.Get("UserUniversityId", 0);
+            if (userUniId > 0)
+            {
+                html = html.Replace("let currentUniId = null;", $"let currentUniId = {userUniId};");
+            }
+
             MapWebView.Source = new HtmlWebViewSource { Html = html };
             JsLogLabel.Text = "Harita yüklendi";
         }

@@ -35,6 +35,31 @@
                                 Padding="14,0" />
                     </Grid>
 
+                    <!-- Active University & City Bar -->
+                    <Border BackgroundColor="#F3FBFF"
+                            Stroke="#BDDDED"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 16"
+                            Padding="12,8">
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" VerticalOptions="Center">
+                            <Label Text="🎓" FontSize="18" VerticalOptions="Center" />
+                            <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                <Label x:Name="ActiveCityLabel" Text="Şehir / Bölge" FontSize="10" TextColor="#6B7280" />
+                                <Label x:Name="ActiveUniversityLabel" Text="Üniversite Seçin" FontSize="13" FontAttributes="Bold" TextColor="#102A43" LineBreakMode="TailTruncation" />
+                            </VerticalStackLayout>
+                            <Picker x:Name="MainUniversityPicker"
+                                    Grid.Column="2"
+                                    Title="Değiştir"
+                                    ItemDisplayBinding="{Binding Name}"
+                                    SelectedIndexChanged="OnMainUniversityPickerChanged"
+                                    TextColor="#1D9DE5"
+                                    FontAttributes="Bold"
+                                    FontSize="12"
+                                    HeightRequest="36"
+                                    VerticalOptions="Center" />
+                        </Grid>
+                    </Border>
+
                     <Border BackgroundColor="#EAF6FD"
                             Stroke="#BDDDED"
                             StrokeThickness="1"
@@ -286,24 +311,24 @@
             <WebView x:Name="MapWebView" />
             
             <!-- Floating Top Header Bar -->
-            <Grid VerticalOptions="Start" Padding="16,14" ColumnDefinitions="*,Auto" Margin="0,4,0,0">
-                <Border BackgroundColor="#E6102A43" Stroke="Transparent" StrokeShape="RoundRectangle 20" Padding="16,8" HorizontalOptions="Start">
-                    <Label x:Name="MainMapHeaderLabel" Text="📍 Kalkış Noktası Seçin" FontSize="13" FontAttributes="Bold" TextColor="White" VerticalOptions="Center" />
+            <Grid VerticalOptions="Start" Padding="14,10" ColumnDefinitions="Auto,*,Auto" InputTransparent="False">
+                <Border BackgroundColor="#E6102A43" Stroke="Transparent" StrokeShape="RoundRectangle 18" Padding="14,6" VerticalOptions="Center">
+                    <Label x:Name="MainMapHeaderLabel" Text="📍 Kalkış Noktası Seçin" FontSize="12" FontAttributes="Bold" TextColor="White" VerticalOptions="Center" />
                 </Border>
-                
-                <Button Grid.Column="1"
+
+                <Button Grid.Column="2"
                         Text="✕ Kapat"
                         Clicked="OnCloseMapClicked"
-                        BackgroundColor="#EAF6FD"
-                        TextColor="#102A43"
+                        BackgroundColor="#1D9DE5"
+                        TextColor="White"
                         FontAttributes="Bold"
-                        CornerRadius="18"
-                        Padding="16,0"
-                        HeightRequest="38"
+                        CornerRadius="16"
+                        Padding="14,0"
+                        HeightRequest="36"
                         HorizontalOptions="End"
                         VerticalOptions="Center">
                     <Button.Shadow>
-                        <Shadow Brush="#55000000" Offset="0,3" Radius="8" Opacity="0.35" />
+                        <Shadow Brush="#40000000" Offset="0,2" Radius="6" Opacity="0.3" />
                     </Button.Shadow>
                 </Button>
             </Grid>

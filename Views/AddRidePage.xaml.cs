@@ -61,6 +61,27 @@ public partial class AddRidePage : ContentPage
         _mapInterop = new MapInterop();
         _mapInterop.LocationSelected += OnMapLocationSelected;
 
+#if WINDOWS
+        MapWebView.HandlerChanged += (s, e) =>
+        {
+            if (MapWebView.Handler?.PlatformView is Microsoft.UI.Xaml.Controls.WebView2 webView2)
+            {
+                webView2.WebMessageReceived += (sender, args) =>
+                {
+                    try
+                    {
+                        var raw = args.TryGetWebMessageAsString();
+                        if (!string.IsNullOrEmpty(raw))
+                        {
+                            _mapInterop.SelectLocation(raw);
+                        }
+                    }
+                    catch { }
+                };
+            }
+        };
+#endif
+
         LoadMapIntoWebView();
 
         // Intercept navigation from map (app://locationSelected fallback)
@@ -153,8 +174,7 @@ public partial class AddRidePage : ContentPage
     private async void OnDepartureLocationTapped(object? sender, TappedEventArgs e)
     {
         _lastFocusedPickerName = "Departure";
-        MapHeaderLabel.Text = "📍 Kalkış Noktası Seçin";
-        MapSubHeaderLabel.Text = "Haritadaki pinlere dokunarak kalkış yerini belirleyin.";
+        MapHeaderLabel.Text = "📍 Kalkış Noktası Seçin (Pin'e Dokunun)";
         ShowMapView();
         await SetupMapForSelectedUniversityAsync();
     }
@@ -162,8 +182,7 @@ public partial class AddRidePage : ContentPage
     private async void OnDestinationLocationTapped(object? sender, TappedEventArgs e)
     {
         _lastFocusedPickerName = "Destination";
-        MapHeaderLabel.Text = "🎯 Varış Noktası Seçin";
-        MapSubHeaderLabel.Text = "Haritadaki pinlere dokunarak varış yerini belirleyin.";
+        MapHeaderLabel.Text = "🎯 Varış Noktası Seçin (Pin'e Dokunun)";
         ShowMapView();
         await SetupMapForSelectedUniversityAsync();
     }
@@ -190,19 +209,20 @@ public partial class AddRidePage : ContentPage
         {
             using var stream = await FileSystem.OpenAppPackageFileAsync(MapAssetFileName);
             using var reader = new StreamReader(stream);
-            _mapHtmlContent = await reader.ReadToEndAsync();
+            var html = await reader.ReadToEndAsync();
 
+            var userUniId = Preferences.Default.Get("UserUniversityId", 0);
+            if (userUniId > 0)
+            {
+                html = html.Replace("let currentUniId = null;", $"let currentUniId = {userUniId};");
+            }
+
+            _mapHtmlContent = html;
             MapWebView.Source = await CreateMapSourceAsync(_mapHtmlContent);
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"Error loading map file: {ex.Message}");
-
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                MapDebugLabel.IsVisible = true;
-                MapDebugLabel.Text = $"Harita yüklenemedi: {ex.Message}";
-            });
 
             if (!string.IsNullOrWhiteSpace(_mapHtmlContent))
             {
@@ -247,13 +267,13 @@ public partial class AddRidePage : ContentPage
                 if (unis != null && unis.Count > 0)
                 {
                     _universities = unis;
-                    MapUniversityPicker.ItemsSource = _universities;
+                    FormUniversityPicker.ItemsSource = _universities;
                 }
             }
 
             var userUniId = Preferences.Default.Get("UserUniversityId", 0);
             University? targetUni = null;
-            if (userUniId > 0)
+            if (userUniId > 0 && _universities.Count > 0)
             {
                 targetUni = _universities.FirstOrDefault(u => u.Id == userUniId);
             }
@@ -261,12 +281,16 @@ public partial class AddRidePage : ContentPage
             if (targetUni == null && _universities.Count > 0)
             {
                 targetUni = _universities[0];
+                Preferences.Default.Set("UserUniversityId", targetUni.Id);
+                Preferences.Default.Set("UserUniversityName", targetUni.Name);
+                Preferences.Default.Set("UserCity", targetUni.City);
             }
 
             if (targetUni != null)
             {
                 _currentMapUniversity = targetUni;
-                MapUniversityPicker.SelectedItem = targetUni;
+                FormUniversityPicker.SelectedItem = targetUni;
+                FormUniversityLabel.Text = targetUni.Name;
                 await FocusUniversityOnMapAsync(targetUni);
                 await LoadLocationsForPickersAsync(targetUni.Id);
             }
@@ -277,11 +301,16 @@ public partial class AddRidePage : ContentPage
         }
     }
 
-    private async void OnMapUniversityPickerChanged(object sender, EventArgs e)
+    private async void OnFormUniversityPickerChanged(object? sender, EventArgs e)
     {
-        if (MapUniversityPicker.SelectedItem is University selectedUni)
+        if (FormUniversityPicker.SelectedItem is University selectedUni)
         {
             _currentMapUniversity = selectedUni;
+            FormUniversityLabel.Text = selectedUni.Name;
+            Preferences.Default.Set("UserUniversityId", selectedUni.Id);
+            Preferences.Default.Set("UserUniversityName", selectedUni.Name);
+            Preferences.Default.Set("UserCity", selectedUni.City);
+
             await FocusUniversityOnMapAsync(selectedUni);
             await LoadLocationsForPickersAsync(selectedUni.Id);
         }
@@ -385,14 +414,12 @@ public partial class AddRidePage : ContentPage
     {
         FormView.IsVisible = true;
         MapContainer.IsVisible = false;
-        MapDebugLabel.IsVisible = false;
     }
 
     private void ShowMapView()
     {
         FormView.IsVisible = false;
         MapContainer.IsVisible = true;
-        MapDebugLabel.IsVisible = false;
         if (MapWebView.Source == null && !string.IsNullOrEmpty(_mapHtmlContent))
         {
             MapWebView.Source = new HtmlWebViewSource { Html = _mapHtmlContent };

@@ -28,6 +28,7 @@ public partial class MainPage : ContentPage
 
     // Modelimizi İngilizce 'Ride' yerine yeni Türkçe 'Yolculuk' modelimize çevirdik
     public ObservableCollection<Yolculuk> Rides { get; set; } = new();
+    private List<University> _universities = new();
 
     public MainPage()
     {
@@ -39,6 +40,27 @@ public partial class MainPage : ContentPage
         _mapInterop.LocationSelected += OnMapLocationSelected;
         MapWebView.Navigating += OnMapWebViewNavigating;
         _mapTargetPicker = StartPicker;
+
+#if WINDOWS
+        MapWebView.HandlerChanged += (s, e) =>
+        {
+            if (MapWebView.Handler?.PlatformView is Microsoft.UI.Xaml.Controls.WebView2 webView2)
+            {
+                webView2.WebMessageReceived += (sender, args) =>
+                {
+                    try
+                    {
+                        var raw = args.TryGetWebMessageAsString();
+                        if (!string.IsNullOrEmpty(raw))
+                        {
+                            _mapInterop.SelectLocation(raw);
+                        }
+                    }
+                    catch { }
+                };
+            }
+        };
+#endif
         
         LoadMapIntoWebView();
     }
@@ -49,8 +71,15 @@ public partial class MainPage : ContentPage
         {
             using var stream = await FileSystem.OpenAppPackageFileAsync(MapAssetFileName);
             using var reader = new StreamReader(stream);
-            _mapHtmlContent = await reader.ReadToEndAsync();
+            var html = await reader.ReadToEndAsync();
 
+            var userUniId = Preferences.Default.Get("UserUniversityId", 0);
+            if (userUniId > 0)
+            {
+                html = html.Replace("let currentUniId = null;", $"let currentUniId = {userUniId};");
+            }
+
+            _mapHtmlContent = html;
             MapWebView.Source = await CreateMapSourceAsync(_mapHtmlContent);
         }
         catch (Exception ex)
@@ -207,7 +236,34 @@ public partial class MainPage : ContentPage
     {
         try
         {
+            if (_universities.Count == 0)
+            {
+                var unis = await _apiService.GetUniversitiesAsync();
+                if (unis != null && unis.Count > 0)
+                {
+                    _universities = unis;
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        MainUniversityPicker.ItemsSource = _universities;
+                    });
+                }
+            }
+
             var userUniId = Preferences.Default.Get("UserUniversityId", 0);
+            University? activeUni = null;
+            if (userUniId > 0 && _universities.Count > 0)
+            {
+                activeUni = _universities.FirstOrDefault(u => u.Id == userUniId);
+            }
+            if (activeUni == null && _universities.Count > 0)
+            {
+                activeUni = _universities[0];
+                Preferences.Default.Set("UserUniversityId", activeUni.Id);
+                Preferences.Default.Set("UserUniversityName", activeUni.Name);
+                Preferences.Default.Set("UserCity", activeUni.City);
+                userUniId = activeUni.Id;
+            }
+
             int? filterUniId = userUniId > 0 ? userUniId : null;
 
             var rides = await _apiService.TumYolculuklariGetirAsync(filterUniId);
@@ -218,7 +274,8 @@ public partial class MainPage : ContentPage
                 .ThenBy(r => r.KalkisZamani)
                 .ToList();
 
-            var uniName = Preferences.Default.Get("UserUniversityName", string.Empty);
+            var uniName = activeUni?.Name ?? Preferences.Default.Get("UserUniversityName", string.Empty);
+            var cityName = activeUni?.City ?? Preferences.Default.Get("UserCity", string.Empty);
             var titleText = !string.IsNullOrWhiteSpace(uniName) ? $"{uniName} Yolculukları" : "Mevcut Yolculuklar";
 
             MainThread.BeginInvokeOnMainThread(() =>
@@ -234,6 +291,13 @@ public partial class MainPage : ContentPage
                     ? "Bu kampüs için henüz aktif ilan yok"
                     : $"{activeRides.Count} aktif ilan listeleniyor";
                 ActiveFilterLabel.Text = "Kalkış ve varış seçerek kampüs rotalarını filtrele.";
+
+                if (activeUni != null)
+                {
+                    ActiveCityLabel.Text = string.IsNullOrWhiteSpace(cityName) ? "Şehir / Bölge" : cityName;
+                    ActiveUniversityLabel.Text = activeUni.Name;
+                    MainUniversityPicker.SelectedItem = activeUni;
+                }
             });
 
             if (userUniId > 0)
@@ -276,6 +340,27 @@ public partial class MainPage : ContentPage
         catch (Exception ex)
         {
             Debug.WriteLine($"Veri çekme hatası: {ex.Message}");
+        }
+    }
+
+    private async void OnMainUniversityPickerChanged(object? sender, EventArgs e)
+    {
+        if (MainUniversityPicker.SelectedItem is University uni)
+        {
+            Preferences.Default.Set("UserUniversityId", uni.Id);
+            Preferences.Default.Set("UserUniversityName", uni.Name);
+            Preferences.Default.Set("UserCity", uni.City);
+
+            ActiveCityLabel.Text = uni.City;
+            ActiveUniversityLabel.Text = uni.Name;
+
+            await LoadData();
+
+            try
+            {
+                await MapWebView.EvaluateJavaScriptAsync($"if(window.selectUniversityById) {{ window.selectUniversityById({uni.Id}); }}");
+            }
+            catch { }
         }
     }
 
