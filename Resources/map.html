@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="tr">
 
 <head>
@@ -65,7 +65,7 @@
             align-items: center;
             gap: 5px;
             margin-bottom: 2px;
-            max-width: 170px;
+            max-width: 180px;
             overflow: hidden;
             text-overflow: ellipsis;
         }
@@ -196,7 +196,7 @@
         // ==========================================
         // 1. TÜM TÜRKİYE ÜNİVERSİTE & ÖĞRENCİ POI KATALOĞU (18 ÜNİVERSİTE)
         // ==========================================
-        const CAMPUS_CATALOG = [
+        const CAMPUS_CATALOG = ﻿[
     {
         "id":  1,
         "name":  "Süleyman Demirel Üniversitesi",
@@ -1814,12 +1814,12 @@
         // 3. PİN VE ETİKETLERİ HARİTAYA ÇİZME
         // ==========================================
         function renderMarkers(places) {
-            currentMarkers.forEach(m => m.remove());
+            currentMarkers.forEach(function(m) { m.remove(); });
             currentMarkers = [];
 
             if (!places || !Array.isArray(places)) return;
 
-            places.forEach(place => {
+            places.forEach(function(place) {
                 const category = place.category || place.Category || 'Kampus';
                 if (activeCategoryFilter !== 'all' && category !== activeCategoryFilter) {
                     return;
@@ -1846,19 +1846,17 @@
                 markerContainer.setAttribute('aria-label', title + ' seç');
 
                 markerContainer.innerHTML = 
-                    <div class="marker-tag">
-                        <span class="cat-dot" style="background-color: \;"></span>
-                        <span class="tag-title">\</span>
-                    </div>
-                    <div class="marker-pin">
-                        <svg class="pin-svg" viewBox="0 0 24 32" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 0C7 0 3.5 3.6 3.5 8.1c0 5.9 7.8 15.8 7.9 15.9.2-.1 7.9-10 7.9-15.9C20.5 3.6 17 0 12 0z" fill="\" stroke="#ffffff" stroke-width="1.6"/>
-                            <circle cx="12" cy="8.1" r="3.2" fill="#ffffff"/>
-                        </svg>
-                    </div>
-                ;
+                    '<div class="marker-tag">' +
+                        '<span class="cat-dot" style="background-color: ' + color + ';"></span>' +
+                        '<span class="tag-title">' + title + '</span>' +
+                    '</div>' +
+                    '<div class="marker-pin">' +
+                        '<svg class="pin-svg" viewBox="0 0 24 32" xmlns="http://www.w3.org/2000/svg">' +
+                            '<path d="M12 0C7 0 3.5 3.6 3.5 8.1c0 5.9 7.8 15.8 7.9 15.9.2-.1 7.9-10 7.9-15.9C20.5 3.6 17 0 12 0z" fill="' + color + '" stroke="#ffffff" stroke-width="1.6"/>' +
+                            '<circle cx="12" cy="8.1" r="3.2" fill="#ffffff"/>' +
+                        '</svg>' +
+                    '</div>';
 
-                // Tıklama ve Dokunma Olayı (Tek Dokunuşla Seçim)
                 function onSelect(e) {
                     if (e) {
                         e.preventDefault();
@@ -1942,7 +1940,7 @@
 
         function filterCategory(cat, btn) {
             activeCategoryFilter = cat;
-            document.querySelectorAll('.filter-bar .pill').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.filter-bar .pill').forEach(function(p) { p.classList.remove('active'); });
             if (btn) btn.classList.add('active');
             renderMarkers(currentLoadedPlaces);
         }
@@ -1957,7 +1955,7 @@
             if (!window.mapReady) {
                 return true;
             }
-            const uni = CAMPUS_CATALOG.find(u => String(u.id) === String(id));
+            const uni = CAMPUS_CATALOG.find(function(u) { return String(u.id) === String(id); });
             if (uni) {
                 focusAndLoadUniversity(uni);
                 return true;
