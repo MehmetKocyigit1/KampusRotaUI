@@ -36,11 +36,14 @@ public partial class RegisterPage : ContentPage
             if (unis != null && unis.Count > 0)
             {
                 _allUniversities = unis;
+                var trCulture = new System.Globalization.CultureInfo("tr-TR");
+                var trComparer = StringComparer.Create(trCulture, true);
+
                 var cities = _allUniversities
                     .Select(u => u.City)
                     .Where(c => !string.IsNullOrWhiteSpace(c))
                     .Distinct()
-                    .OrderBy(c => c)
+                    .OrderBy(c => c, trComparer)
                     .ToList();
 
                 CityPicker.ItemsSource = cities;
@@ -56,9 +59,12 @@ public partial class RegisterPage : ContentPage
     {
         if (CityPicker.SelectedItem is string selectedCity)
         {
+            var trCulture = new System.Globalization.CultureInfo("tr-TR");
+            var trComparer = StringComparer.Create(trCulture, true);
+
             var filteredUnis = _allUniversities
-                .Where(u => u.City.Equals(selectedCity, StringComparison.OrdinalIgnoreCase))
-                .OrderBy(u => u.Name)
+                .Where(u => string.Equals(u.City, selectedCity, StringComparison.CurrentCultureIgnoreCase))
+                .OrderBy(u => u.Name, trComparer)
                 .ToList();
 
             UniversityPicker.ItemsSource = filteredUnis;

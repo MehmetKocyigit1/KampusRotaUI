@@ -212,7 +212,7 @@ public partial class AddRidePage : ContentPage
         try
         {
             using var stream = await FileSystem.OpenAppPackageFileAsync(MapAssetFileName);
-            using var reader = new StreamReader(stream);
+            using var reader = new StreamReader(stream, System.Text.Encoding.UTF8);
             var html = await reader.ReadToEndAsync();
 
             var userUniId = Preferences.Default.Get("UserUniversityId", 0);

@@ -48,7 +48,7 @@ public partial class MapPage : ContentPage
         try
         {
             using var stream = await FileSystem.OpenAppPackageFileAsync("map.html");
-            using var reader = new System.IO.StreamReader(stream);
+            using var reader = new System.IO.StreamReader(stream, System.Text.Encoding.UTF8);
             var html = await reader.ReadToEndAsync();
 
             var userUniId = Preferences.Default.Get("UserUniversityId", 0);
