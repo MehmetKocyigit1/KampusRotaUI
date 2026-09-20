@@ -115,6 +115,11 @@ public partial class MainPage : ContentPage
         OpenMapForPicker(StartPicker);
     }
 
+    private void OnStartMapClicked(object sender, EventArgs e)
+    {
+        OpenMapForPicker(StartPicker);
+    }
+
     private void OnDestinationLocationTapped(object? sender, TappedEventArgs e)
     {
         OpenMapForPicker(DestinationPicker);
@@ -129,7 +134,31 @@ public partial class MainPage : ContentPage
     {
         _mapTargetPicker = targetPicker;
         _returnToSearchAfterMap = SearchViewContainer.IsVisible;
+
+        if (MainMapHeaderLabel != null)
+        {
+            MainMapHeaderLabel.Text = targetPicker == StartPicker
+                ? "📍 Kalkış Noktası Seçin (Pin'e Dokunun)"
+                : "🎯 Varış Noktası Seçin (Pin'e Dokunun)";
+        }
+
         ShowMapView();
+
+        var userUniId = Preferences.Default.Get("UserUniversityId", 0);
+        int targetUniId = userUniId > 0 ? userUniId : 1;
+
+        Dispatcher.Dispatch(async () =>
+        {
+            await Task.Delay(300);
+            try
+            {
+                await MapWebView.EvaluateJavaScriptAsync($"if(window.selectUniversityById) {{ window.selectUniversityById({targetUniId}); }}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"MainPage map focus error: {ex.Message}");
+            }
+        });
     }
 
     private void ShowListView()
@@ -206,6 +235,43 @@ public partial class MainPage : ContentPage
                     : $"{activeRides.Count} aktif ilan listeleniyor";
                 ActiveFilterLabel.Text = "Kalkış ve varış seçerek kampüs rotalarını filtrele.";
             });
+
+            if (userUniId > 0)
+            {
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        var locs = await _apiService.GetCampusLocationsAsync(userUniId);
+                        if (locs != null && locs.Count > 0)
+                        {
+                            MainThread.BeginInvokeOnMainThread(() =>
+                            {
+                                var currentStart = StartPicker.SelectedItem?.ToString();
+                                var currentDest = DestinationPicker.SelectedItem?.ToString();
+
+                                StartPicker.Items.Clear();
+                                StartPicker.Items.Add("Mevcut Konum");
+                                DestinationPicker.Items.Clear();
+
+                                foreach (var loc in locs)
+                                {
+                                    if (!StartPicker.Items.Contains(loc.Name))
+                                        StartPicker.Items.Add(loc.Name);
+                                    if (!DestinationPicker.Items.Contains(loc.Name))
+                                        DestinationPicker.Items.Add(loc.Name);
+                                }
+
+                                if (!string.IsNullOrEmpty(currentStart) && StartPicker.Items.Contains(currentStart))
+                                    StartPicker.SelectedItem = currentStart;
+                                if (!string.IsNullOrEmpty(currentDest) && DestinationPicker.Items.Contains(currentDest))
+                                    DestinationPicker.SelectedItem = currentDest;
+                            });
+                        }
+                    }
+                    catch { }
+                });
+            }
         }
         catch (Exception ex)
         {

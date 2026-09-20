@@ -3,14 +3,19 @@
 
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>KampusRota Harita</title>
 
-    <!-- MAPLIBRE GL JS (100% Free & Open Source OpenStreetMap) -->
+    <!-- MAPLIBRE GL JS (100% Ücretsiz, Açık Kaynaklı) -->
     <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
     <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
 
     <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         html,
         body {
             margin: 0;
@@ -19,141 +24,521 @@
             height: 100%;
             overflow: hidden;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f5f5f7;
+            background-color: #f0f4f8;
         }
 
         #map {
             width: 100vw;
             height: 100vh;
+            z-index: 1;
         }
 
-        .user-marker {
-            position: relative;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: #007AFF;
-            border: 3px solid white;
-            box-shadow: 0 0 10px rgba(0, 122, 255, 0.7);
-        }
-
-        .user-marker::after {
-            content: '';
+        /* ÜST KONTROL VE ÜNİVERSİTE SEÇİM ÇUBUĞU */
+        .top-bar {
             position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: rgba(0, 122, 255, 0.2);
-            animation: pulse 1.6s infinite;
-            z-index: -1;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(16, 42, 67, 0.15);
+            border: 1px solid rgba(189, 221, 237, 0.8);
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-width: 540px;
+            margin: 0 auto;
         }
 
-        @keyframes pulse {
-            0% {
-                transform: translate(-50%, -50%) scale(0.6);
-                opacity: 0.9;
-            }
-            70% {
-                transform: translate(-50%, -50%) scale(1.6);
-                opacity: 0;
-            }
-            100% {
-                transform: translate(-50%, -50%) scale(1.6);
-                opacity: 0;
-            }
-        }
-
-        .pin-marker {
-            width: 26px;
-            height: 34px;
-            display: block;
-            cursor: pointer;
-            transition: transform 0.15s ease;
-            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
-        }
-
-        .pin-marker:hover,
-        .pin-marker:focus {
-            transform: translateY(-4px) scale(1.1);
-            outline: none;
-        }
-
-        .place-label {
-            display: inline-flex;
+        .top-row {
+            display: flex;
             align-items: center;
-            background: white;
-            color: #1c1c1e;
-            padding: 5px 9px;
-            border-radius: 10px;
-            font-size: 12px;
+            gap: 8px;
+        }
+
+        .uni-select {
+            flex: 1;
+            padding: 8px 12px;
+            border-radius: 12px;
+            border: 1px solid #BDDDED;
+            background-color: #F3FBFF;
+            color: #102A43;
+            font-size: 13px;
             font-weight: 600;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+            outline: none;
+            cursor: pointer;
+        }
+
+        .uni-select:focus {
+            border-color: #1D9DE5;
+        }
+
+        .filter-pills {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 2px;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .filter-pills::-webkit-scrollbar {
+            display: none;
+        }
+
+        .pill {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            background: #EAF6FD;
+            color: #174A72;
+            border: 1px solid #BDDDED;
+            transition: all 0.15s ease;
+        }
+
+        .pill.active {
+            background: #1D9DE5;
+            color: #fff;
+            border-color: #1D9DE5;
+        }
+
+        /* PİN VE ETİKET TASARIMLARI */
+        .pin-wrapper {
+            cursor: pointer;
+            filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.3));
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .pin-wrapper:hover,
+        .pin-wrapper:active {
+            transform: scale(1.18) translateY(-4px);
+        }
+
+        .pin-icon {
+            width: 30px;
+            height: 38px;
+            display: block;
+        }
+
+        .place-tag {
+            background: white;
+            color: #102A43;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
             border: 1px solid rgba(0, 0, 0, 0.08);
             white-space: nowrap;
             cursor: pointer;
-            user-select: none;
+            pointer-events: auto;
+            margin-top: -6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
             transition: transform 0.15s ease;
         }
 
-        .place-label:hover {
-            transform: translateY(-2px);
+        .place-tag:hover {
+            transform: scale(1.08);
         }
 
-        .category-badge {
-            width: 8px;
-            height: 8px;
+        .category-dot {
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
-            margin-right: 5px;
             display: inline-block;
         }
 
-        .maplibregl-popup-content {
-            border-radius: 12px;
-            padding: 10px 14px;
-            font-size: 13px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        /* ALT SEÇİM BİLGİ KARTI (BOTTOM SHEET) */
+        .selection-sheet {
+            position: absolute;
+            bottom: 20px;
+            left: 16px;
+            right: 16px;
+            max-width: 480px;
+            margin: 0 auto;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(16, 42, 67, 0.22);
+            border: 1px solid #BDDDED;
+            padding: 16px;
+            transform: translateY(140%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .selection-sheet.visible {
+            transform: translateY(0);
+        }
+
+        .sheet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 6px;
+        }
+
+        .sheet-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sheet-close {
+            background: #EAF6FD;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: #486581;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .sheet-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #102A43;
+            margin: 0 0 4px 0;
+        }
+
+        .sheet-desc {
+            font-size: 12px;
+            color: #627D98;
+            margin: 0 0 14px 0;
+            line-height: 1.4;
+        }
+
+        .sheet-select-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 14px;
+            background: #1D9DE5;
+            color: white;
+            border: none;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(29, 157, 229, 0.35);
+            transition: background 0.15s ease, transform 0.1s ease;
+        }
+
+        .sheet-select-btn:active {
+            transform: scale(0.98);
+            background: #1580BA;
         }
     </style>
 </head>
 
 <body>
 
+    <!-- HARİTA KAPSAYICISI -->
     <div id="map"></div>
 
+    <!-- ÜST ÜNİVERSİTE & KATEGORİ ÇUBUĞU -->
+    <div class="top-bar">
+        <div class="top-row">
+            <select id="universitySelect" class="uni-select" onchange="onUniversityDropdownChanged(this.value)">
+                <!-- Dinamik Doldurulur -->
+            </select>
+        </div>
+        <div class="filter-pills">
+            <div class="pill active" onclick="filterCategory('all', this)">🌟 Tümü</div>
+            <div class="pill" onclick="filterCategory('Kampus', this)">🎓 Kampüs</div>
+            <div class="pill" onclick="filterCategory('Yurt', this)">🏠 Yurtlar</div>
+            <div class="pill" onclick="filterCategory('Ulasim', this)">🚌 Ulaşım</div>
+            <div class="pill" onclick="filterCategory('Sosyal', this)">☕ Sosyal / AVM</div>
+        </div>
+    </div>
+
+    <!-- ALT SEÇİM BİLGİ KARTI -->
+    <div id="selectionSheet" class="selection-sheet">
+        <div class="sheet-header">
+            <span id="sheetCategoryBadge" class="sheet-badge" style="background-color: #007AFF;">Kampüs</span>
+            <button class="sheet-close" onclick="closeSheet()">✕</button>
+        </div>
+        <h3 id="sheetTitle" class="sheet-title">Durak Başlığı</h3>
+        <p id="sheetDesc" class="sheet-desc">Açıklama veya rota bilgisi</p>
+        <button id="sheetConfirmBtn" class="sheet-select-btn" onclick="confirmCurrentSelection()">📍 Bu Noktayı Rota Olarak Seç</button>
+    </div>
+
     <script>
-        (function () {
-            window.__consoleLogs = [];
-            ['log', 'info', 'warn', 'error'].forEach(function (level) {
-                const orig = console[level];
-                console[level] = function () {
-                    try {
-                        const args = Array.prototype.slice.call(arguments).map(function (a) {
-                            try { return (typeof a === 'object') ? JSON.stringify(a) : String(a); } catch (e) { return String(a); }
-                        });
-                        window.__consoleLogs.push({ level: level, message: args.join(' ') });
-                    } catch (e) { }
-                    if (orig && orig.apply) orig.apply(console, arguments);
-                };
-            });
-            window.getAndClearLogs = function () {
-                const copy = window.__consoleLogs.slice();
-                window.__consoleLogs.length = 0;
-                return copy;
-            };
-        })();
+        // ==========================================
+        // 1. TÜRKİYE'DEKİ TÜM BÜYÜK ÜNİVERSİTELER & ÖĞRENCİ POI KATALOĞU
+        // ==========================================
+        const CAMPUS_CATALOG = [
+            {
+                id: 1, key: "sdu", name: "Süleyman Demirel Üniversitesi (Isparta)", city: "Isparta",
+                lat: 37.8285, lng: 30.5345, zoom: 14,
+                places: [
+                    { locationKey: "dogu-kampusu", title: "Doğu Kampüsü", category: "Kampus", latitude: 37.8285, longitude: 30.5345, description: "SDÜ Doğu Yerleşkesi - Mühendislik & Rektörlük" },
+                    { locationKey: "bati-kampusu", title: "Batı Kampüsü", category: "Kampus", latitude: 37.8294, longitude: 30.5264, description: "SDÜ Batı Yerleşkesi - İİBF ve İlahiyat" },
+                    { locationKey: "100-yil", title: "100. Yıl Yerleşkesi", category: "Kampus", latitude: 37.7597, longitude: 30.5482, description: "100. Yıl Sağlık Yerleşkesi" },
+                    { locationKey: "sdu-tip", title: "SDÜ Tıp Fakültesi Hastanesi", category: "Kampus", latitude: 37.8310, longitude: 30.5310, description: "Araştırma ve Uygulama Hastanesi" },
+                    { locationKey: "erkek-yurdu", title: "Erkek Öğrenci Yurdu", category: "Yurt", latitude: 37.7823, longitude: 30.5619, description: "Isparta KYK Erkek Öğrenci Yurdu" },
+                    { locationKey: "mihrihatun-kiz-yurdu", title: "MihriHatun Kız Yurdu", category: "Yurt", latitude: 37.8550, longitude: 30.5315, description: "Çünür KYK Mihri Hatun Kız Yurdu" },
+                    { locationKey: "bediuzzaman-kyk", title: "Bediüzzaman KYK Yurdu", category: "Yurt", latitude: 37.8350, longitude: 30.5280, description: "Doğu Kampüs içi KYK Yurdu" },
+                    { locationKey: "otogar", title: "Isparta Otogarı", category: "Ulasim", latitude: 37.8103, longitude: 30.5372, description: "Isparta Şehirlerarası Otobüs Terminali" },
+                    { locationKey: "tren-gari", title: "Isparta Tren Garı", category: "Ulasim", latitude: 37.7690, longitude: 30.5590, description: "Göller Ekspresi İstasyonu" },
+                    { locationKey: "iyas", title: "Iyaş Park AVM", category: "Sosyal", latitude: 37.7820, longitude: 30.5446, description: "Iyaşpark Alışveriş & Yaşam Merkezi" },
+                    { locationKey: "meydan-avm", title: "Meydan AVM", category: "Sosyal", latitude: 37.7647, longitude: 30.5509, description: "Isparta Meydan AVM" },
+                    { locationKey: "sehir-merkezi", title: "Şehir Merkezi (Meydan)", category: "Sosyal", latitude: 37.7630, longitude: 30.5547, description: "Isparta Hükümet Konağı / Valilik Meydanı" },
+                    { locationKey: "kafeler-caddesi", title: "Kafeler Caddesi", category: "Sosyal", latitude: 37.7655, longitude: 30.5520, description: "Öğrencilerin buluşma noktası Kafeler Caddesi" },
+                    { locationKey: "sehir-hastanesi", title: "Isparta Şehir Hastanesi", category: "Sosyal", latitude: 37.7769, longitude: 30.5612, description: "Isparta Şehir Hastanesi Durağı" }
+                ]
+            },
+            {
+                id: 2, key: "itu", name: "İstanbul Teknik Üniversitesi (İTÜ)", city: "İstanbul",
+                lat: 41.1055, lng: 29.0242, zoom: 14,
+                places: [
+                    { locationKey: "itu-ayazaga", title: "Ayazağa Kampüsü (Maslak)", category: "Kampus", latitude: 41.1055, longitude: 29.0242, description: "İTÜ Ana Giriş & Rektörlük" },
+                    { locationKey: "itu-kutuphane", title: "Mustafa İnan Kütüphanesi", category: "Kampus", latitude: 41.1040, longitude: 29.0230, description: "7/24 Açık İTÜ Merkez Kütüphanesi" },
+                    { locationKey: "itu-gumussuyu", title: "Gümüşsuyu Kampüsü (Taksim)", category: "Kampus", latitude: 41.0384, longitude: 28.9890, description: "Makina Fakültesi" },
+                    { locationKey: "itu-taskisla", title: "Taşkışla Kampüsü", category: "Kampus", latitude: 41.0412, longitude: 28.9880, description: "Mimarlık Fakültesi" },
+                    { locationKey: "itu-macka", title: "Maçka Kampüsü", category: "Kampus", latitude: 41.0455, longitude: 28.9950, description: "İşletme Fakültesi & Yabancı Diller" },
+                    { locationKey: "itu-maslak-kyk", title: "Maslak KYK Yurdu", category: "Yurt", latitude: 41.1080, longitude: 29.0280, description: "Maslak Öğrenci Yurdu" },
+                    { locationKey: "itu-golet-yurtlari", title: "İTÜ Gölet Yurtları", category: "Yurt", latitude: 41.1015, longitude: 29.0205, description: "Gölet Yurt Bölgesi" },
+                    { locationKey: "itu-vadi-yurtlari", title: "İTÜ Vadi Yurtları", category: "Yurt", latitude: 41.1095, longitude: 29.0195, description: "Vadi Yurt Kompleksi" },
+                    { locationKey: "itu-metro", title: "İTÜ - Ayazağa Metro İstasyonu", category: "Ulasim", latitude: 41.1032, longitude: 29.0210, description: "M2 Yenikapı-Hacıosman Metro Hattı" },
+                    { locationKey: "alibeykoy-otogar", title: "Alibeyköy Cep Otogarı", category: "Ulasim", latitude: 41.0740, longitude: 28.9480, description: "Şehirlerarası Otobüs Terminali" },
+                    { locationKey: "esenler-otogar", title: "Esenler Büyük Otogar", category: "Ulasim", latitude: 41.0415, longitude: 28.8950, description: "Büyük İstanbul Otogarı (Bayrampaşa)" },
+                    { locationKey: "kadikoy-iskele", title: "Kadıköy Vapur İskelesi", category: "Ulasim", latitude: 40.9910, longitude: 29.0235, description: "Kadıköy Rıhtım & Vapurlar" },
+                    { locationKey: "maslak-1453", title: "Maslak 1453 Caddesi", category: "Sosyal", latitude: 41.1170, longitude: 29.0150, description: "Kafeler ve Yaşam Alanı" },
+                    { locationKey: "besiktas-meydan", title: "Beşiktaş Meydanı", category: "Sosyal", latitude: 41.0425, longitude: 29.0065, description: "Beşiktaş Çarşı & Sahil" },
+                    { locationKey: "taksim-meydan", title: "Taksim Meydanı", category: "Sosyal", latitude: 41.0370, longitude: 28.9850, description: "Taksim & İstiklal Caddesi" },
+                    { locationKey: "cevahir-avm", title: "Mecidiyeköy Cevahir AVM", category: "Sosyal", latitude: 41.0630, longitude: 28.9925, description: "Cevahir Alışveriş Merkezi & Metrobüs" }
+                ]
+            },
+            {
+                id: 3, key: "boun", name: "Boğaziçi Üniversitesi (İstanbul)", city: "İstanbul",
+                lat: 41.0836, lng: 29.0506, zoom: 15,
+                places: [
+                    { locationKey: "boun-guney", title: "Güney Kampüs (Bebek)", category: "Kampus", latitude: 41.0836, longitude: 29.0506, description: "Tarihi Güney Yerleşkesi & Meydan" },
+                    { locationKey: "boun-kuzey", title: "Kuzey Kampüs (Aşiyan)", category: "Kampus", latitude: 41.0865, longitude: 29.0450, description: "Kütüphane & Fakülteler" },
+                    { locationKey: "boun-hisar", title: "Hisar Kampüsü", category: "Kampus", latitude: 41.0850, longitude: 29.0390, description: "Hisar Yerleşkesi" },
+                    { locationKey: "boun-kandilli", title: "Kandilli Kampüsü", category: "Kampus", latitude: 41.0610, longitude: 29.0620, description: "Rasathane & Deprem Araştırma" },
+                    { locationKey: "boun-kilyos", title: "Kilyos Sarıtepe Kampüsü", category: "Kampus", latitude: 41.2460, longitude: 29.0350, description: "Hazırlık Yerleşkesi" },
+                    { locationKey: "boun-1-yurt", title: "1. Kuzey Öğrenci Yurdu", category: "Yurt", latitude: 41.0870, longitude: 29.0460, description: "Kuzey Kampüs Yurtlar Bölgesi" },
+                    { locationKey: "boun-metro", title: "Boğaziçi Üni Metro İstasyonu", category: "Ulasim", latitude: 41.0855, longitude: 29.0440, description: "M6 Levent-Boğaziçi Metro Hattı" },
+                    { locationKey: "bebek-sahil", title: "Bebek Sahili & Parkı", category: "Sosyal", latitude: 41.0770, longitude: 29.0435, description: "Boğaz Kıyısı Öğrenci Dinlenme Alanı" },
+                    { locationKey: "rumeli-hisari", title: "Rumeli Hisarı Kordon", category: "Sosyal", latitude: 41.0850, longitude: 29.0570, description: "Tarihi Hisar Kafeleri" },
+                    { locationKey: "levent-kanyon", title: "Levent Kanyon AVM", category: "Sosyal", latitude: 41.0785, longitude: 29.0115, description: "Levent Metro Çıkışı" }
+                ]
+            },
+            {
+                id: 4, key: "ytu", name: "Yıldız Teknik Üniversitesi (İstanbul)", city: "İstanbul",
+                lat: 41.0255, lng: 28.8911, zoom: 14,
+                places: [
+                    { locationKey: "ytu-davutpasa", title: "Davutpaşa Kampüsü (Esenler)", category: "Kampus", latitude: 41.0255, longitude: 28.8911, description: "YTÜ Ana Yerleşke" },
+                    { locationKey: "ytu-besiktas", title: "Yıldız Beşiktaş Kampüsü", category: "Kampus", latitude: 41.0505, longitude: 29.0115, description: "Tarihi Yıldız Yerleşkesi" },
+                    { locationKey: "ytu-kutuphane", title: "Davutpaşa Kütüphanesi", category: "Kampus", latitude: 41.0260, longitude: 28.8930, description: "Merkez Kütüphane" },
+                    { locationKey: "ytu-fsm-yurdu", title: "FSM Kız Öğrenci Yurdu", category: "Yurt", latitude: 41.0230, longitude: 28.8980, description: "Fatih Sultan Mehmet KYK Yurdu" },
+                    { locationKey: "ytu-metro", title: "Davutpaşa - YTÜ Metro İstasyonu", category: "Ulasim", latitude: 41.0240, longitude: 28.8950, description: "M1A Metro İstasyonu" },
+                    { locationKey: "cevizlibag-metrobus", title: "Cevizlibağ Metrobüs İstasyonu", category: "Ulasim", latitude: 41.0145, longitude: 28.9180, description: "Metrobüs & Tramvay Aktarma" },
+                    { locationKey: "forum-istanbul", title: "Bayrampaşa Forum İstanbul AVM", category: "Sosyal", latitude: 41.0470, longitude: 28.8960, description: "Kocatepe Metro Durağı" },
+                    { locationKey: "bakirkoy-meydan", title: "Bakırköy Özgürlük Meydanı", category: "Sosyal", latitude: 40.9800, longitude: 28.8720, description: "Bakırköy Merkez" }
+                ]
+            },
+            {
+                id: 5, key: "iu", name: "İstanbul Üniversitesi (Beyazıt/Avcılar)", city: "İstanbul",
+                lat: 41.0130, lng: 28.9640, zoom: 14,
+                places: [
+                    { locationKey: "iu-beyazit", title: "Beyazıt Tarihi Ana Kampüs", category: "Kampus", latitude: 41.0130, longitude: 28.9640, description: "Tarihi Kapı & Rektörlük" },
+                    { locationKey: "iu-avcilar", title: "Avcılar Kampüsü", category: "Kampus", latitude: 40.9905, longitude: 28.7215, description: "Mühendislik & Veterinerlik" },
+                    { locationKey: "iu-cerrahpasa", title: "Cerrahpaşa Yerleşkesi", category: "Kampus", latitude: 41.0050, longitude: 28.9410, description: "Tıp Fakültesi Yerleşkesi" },
+                    { locationKey: "iu-capa", title: "Çapa Tıp Fakültesi", category: "Kampus", latitude: 41.0155, longitude: 28.9380, description: "İstanbul Tıp Fakültesi" },
+                    { locationKey: "vezneciler-metro", title: "Vezneciler - İ.Ü. Metro İstasyonu", category: "Ulasim", latitude: 41.0125, longitude: 28.9590, description: "M2 Metro İstasyonu" },
+                    { locationKey: "beyazit-tramvay", title: "Beyazıt Tramvay Durağı", category: "Ulasim", latitude: 41.0105, longitude: 28.9650, description: "T1 Bağcılar-Kabataş Tramvayı" },
+                    { locationKey: "avcilar-metrobus", title: "Avcılar Metrobüs İstasyonu", category: "Ulasim", latitude: 40.9890, longitude: 28.7230, description: "Avcılar Kampüs Girişi" },
+                    { locationKey: "beyazit-meydani", title: "Beyazıt Meydanı & Sahaflar", category: "Sosyal", latitude: 41.0110, longitude: 28.9655, description: "Tarihi Sahaflar Çarşısı" },
+                    { locationKey: "kadikoy-rihtim", title: "Kadıköy Rıhtım Meydanı", category: "Sosyal", latitude: 40.9925, longitude: 29.0230, description: "Kadıköy Vapur & Çarşı" }
+                ]
+            },
+            {
+                id: 6, key: "odtu", name: "Orta Doğu Teknik Üniversitesi (ODTÜ)", city: "Ankara",
+                lat: 39.8913, lng: 32.7806, zoom: 14,
+                places: [
+                    { locationKey: "odtu-a1", title: "ODTÜ A1 Ana Giriş Kapısı", category: "Kampus", latitude: 39.8913, longitude: 32.7806, description: "Eskişehir Yolu Ana Giriş" },
+                    { locationKey: "odtu-kutuphane", title: "ODTÜ Kütüphanesi", category: "Kampus", latitude: 39.8910, longitude: 32.7845, description: "ODTÜ Merkez Kütüphane" },
+                    { locationKey: "odtu-carsi", title: "ODTÜ Çarşı & Stadyum", category: "Kampus", latitude: 39.8870, longitude: 32.7820, description: "Öğrenci Sosyal Merkezi" },
+                    { locationKey: "odtu-19-yurt", title: "ODTÜ 19. Yurt", category: "Yurt", latitude: 39.8885, longitude: 32.7790, description: "Yurtlar Bölgesi" },
+                    { locationKey: "faik-hiziroglu-kyk", title: "Faik Hızıroğlu KYK Yurdu", category: "Yurt", latitude: 39.9020, longitude: 32.7720, description: "ODTÜ Civarı KYK Yurdu" },
+                    { locationKey: "odtu-metro", title: "ODTÜ Metro İstasyonu", category: "Ulasim", latitude: 39.9035, longitude: 32.7765, description: "M2 Çayyolu Metro Hattı" },
+                    { locationKey: "asti-otogar", title: "AŞTİ Şehirlerarası Otogar", category: "Ulasim", latitude: 39.9175, longitude: 32.8130, description: "Ankara Şehirlerarası Terminali" },
+                    { locationKey: "ankara-yht", title: "Ankara YHT Hızlı Tren Garı", category: "Ulasim", latitude: 39.9360, longitude: 32.8440, description: "Yüksek Hızlı Tren Garı" },
+                    { locationKey: "kizilay-meydan", title: "Kızılay Meydanı", category: "Sosyal", latitude: 39.9208, longitude: 32.8541, description: "Ankara Şehir Merkezi" },
+                    { locationKey: "tunali-hilmi", title: "Tunalı Hilmi Caddesi", category: "Sosyal", latitude: 39.9065, longitude: 32.8605, description: "Kuğulu Park & Kafeler" },
+                    { locationKey: "bahcelievler-7", title: "Bahçelievler 7. Cadde", category: "Sosyal", latitude: 39.9215, longitude: 32.8245, description: "Öğrenci Kafeleri ve Restoranlar" },
+                    { locationKey: "armada-avm", title: "Armada AVM", category: "Sosyal", latitude: 39.9125, longitude: 32.8080, description: "Söğütözü Armada & Hayat Sokağı" }
+                ]
+            },
+            {
+                id: 7, key: "hacettepe", name: "Hacettepe Üniversitesi (Beytepe/Sıhhiye)", city: "Ankara",
+                lat: 39.8660, lng: 32.7350, zoom: 14,
+                places: [
+                    { locationKey: "hacettepe-beytepe", title: "Beytepe Kampüsü (Çankaya)", category: "Kampus", latitude: 39.8660, longitude: 32.7350, description: "Beytepe Ana Yerleşkesi" },
+                    { locationKey: "hacettepe-sihhiye", title: "Sıhhiye Merkez Kampüsü", category: "Kampus", latitude: 39.9300, longitude: 32.8620, description: "Tıp Fakültesi & Hastaneler" },
+                    { locationKey: "beytepe-kutuphane", title: "Beytepe Kütüphanesi", category: "Kampus", latitude: 39.8680, longitude: 32.7370, description: "Beytepe Kütüphane Binası" },
+                    { locationKey: "beytepe-kyk", title: "Beytepe KYK Öğrenci Yurdu", category: "Yurt", latitude: 39.8640, longitude: 32.7320, description: "Beytepe Öğrenci Evleri" },
+                    { locationKey: "beytepe-metro", title: "Beytepe Metro İstasyonu", category: "Ulasim", latitude: 39.8880, longitude: 32.7480, description: "M2 Metro Durağı & Ringler" },
+                    { locationKey: "kizilay-guvenpark", title: "Kızılay Güvenpark", category: "Sosyal", latitude: 39.9200, longitude: 32.8530, description: "Kızılay Otobüs/Dolmuş Merkez" },
+                    { locationKey: "kugulu-park", title: "Kuğulu Park & Tunalı", category: "Sosyal", latitude: 39.9040, longitude: 32.8610, description: "Çankaya Öğrenci Bölgesi" }
+                ]
+            },
+            {
+                id: 9, key: "ege", name: "Ege Üniversitesi (İzmir/Bornova)", city: "İzmir",
+                lat: 38.4600, lng: 27.2280, zoom: 14,
+                places: [
+                    { locationKey: "ege-kutuphane", title: "Ege Üniversitesi Merkez Kütüphane", category: "Kampus", latitude: 38.4615, longitude: 27.2305, description: "Merkez Kütüphane Binası" },
+                    { locationKey: "ege-tip", title: "Ege Tıp Fakültesi Hastanesi", category: "Kampus", latitude: 38.4570, longitude: 27.2240, description: "Hastane & Metro Çıkışı" },
+                    { locationKey: "ege-kyk-yurdu", title: "KYK Ege Öğrenci Yurdu", category: "Yurt", latitude: 38.4550, longitude: 27.2350, description: "Kampüs içi KYK Yurdu" },
+                    { locationKey: "zubeyde-hanim-kyk", title: "Zübeyde Hanım Kız Yurdu", category: "Yurt", latitude: 38.4630, longitude: 27.2380, description: "Bornova KYK Kız Yurdu" },
+                    { locationKey: "ege-metro", title: "Ege Üniversitesi Metro İstasyonu", category: "Ulasim", latitude: 38.4600, longitude: 27.2280, description: "İzmir Metrosu Kampüs Durağı" },
+                    { locationKey: "bornova-metro", title: "Bornova Metro İstasyonu", category: "Ulasim", latitude: 38.4640, longitude: 27.2150, description: "Bornova Merkez & Meydan" },
+                    { locationKey: "halkapinar-aktarma", title: "Halkapınar Aktarma (İZBAN/Metro)", category: "Ulasim", latitude: 38.4350, longitude: 27.1780, description: "Toplu Taşıma Ana Aktarma Merkezi" },
+                    { locationKey: "izmir-otogar", title: "İzmir Otogarı (İZOTAŞ)", category: "Ulasim", latitude: 38.4300, longitude: 27.2220, description: "Şehirlerarası Otobüs Terminali" },
+                    { locationKey: "bornova-kucukpark", title: "Bornova Küçükpark (Kafeler)", category: "Sosyal", latitude: 38.4635, longitude: 27.2195, description: "Öğrencilerin 1 Numaralı Kafeler Bölgesi" },
+                    { locationKey: "bornova-buyukpark", title: "Bornova Büyükpark", category: "Sosyal", latitude: 38.4650, longitude: 27.2140, description: "Büyükpark Gençlik Alanı" },
+                    { locationKey: "forum-bornova", title: "Forum Bornova AVM & IKEA", category: "Sosyal", latitude: 38.4575, longitude: 27.2400, description: "Açık Hava AVM ve Sinema" },
+                    { locationKey: "alsancak-kibris", title: "Alsancak Kıbrıs Şehitleri", category: "Sosyal", latitude: 38.4385, longitude: 27.1430, description: "Alsancak Sevgi Yolu & Kordon" }
+                ]
+            },
+            {
+                id: 11, key: "anadolu", name: "Anadolu Üniversitesi (Eskişehir)", city: "Eskişehir",
+                lat: 39.7915, lng: 30.5005, zoom: 14,
+                places: [
+                    { locationKey: "anadolu-yunusemre", title: "Yunus Emre Kampüsü (Ana Giriş)", category: "Kampus", latitude: 39.7915, longitude: 30.5005, description: "Anadolu Üniversitesi Ana Yerleşke" },
+                    { locationKey: "anadolu-kutuphane", title: "Anadolu Üniversitesi Kütüphanesi", category: "Kampus", latitude: 39.7930, longitude: 30.4990, description: "Yunus Emre Kütüphanesi" },
+                    { locationKey: "anadolu-ogrenci-merkezi", title: "Öğrenci Merkezi & Kongre", category: "Kampus", latitude: 39.7920, longitude: 30.4980, description: "Öğrenci Merkezi & Yemekhane" },
+                    { locationKey: "yunusemre-kyk", title: "Yunus Emre KYK Öğrenci Yurdu", category: "Yurt", latitude: 39.7890, longitude: 30.5040, description: "Eskişehir KYK Yurdu" },
+                    { locationKey: "gunduzalp-kyk", title: "Gündüzalp Erkek Yurdu", category: "Yurt", latitude: 39.7950, longitude: 30.4850, description: "Erkek Öğrenci Yurdu" },
+                    { locationKey: "eskisehir-baglar", title: "Bağlar (Üniversite Caddesi)", category: "Sosyal", latitude: 39.7845, longitude: 30.5080, description: "Öğrenci Kafeleri ve Yaşam Merkezi" },
+                    { locationKey: "espark-avm", title: "Espark AVM", category: "Sosyal", latitude: 39.7815, longitude: 30.5105, description: "Espark Alışveriş Merkezi & Tramvay" },
+                    { locationKey: "porsuk-adalar", title: "Adalar / Porsuk Çayı Kıyısı", category: "Sosyal", latitude: 39.7750, longitude: 30.5180, description: "Porsuk Gondol & Çimler" },
+                    { locationKey: "barlar-sokagi", title: "Barlar Sokağı", category: "Sosyal", latitude: 39.7765, longitude: 30.5160, description: "Eskişehir Gece Hayatı & Müzik" },
+                    { locationKey: "haller-genclik", title: "Haller Gençlik Merkezi", category: "Sosyal", latitude: 39.7830, longitude: 30.5150, description: "Tarihi Haller Gençlik Binası" },
+                    { locationKey: "eskisehir-tren-gari", title: "Eskişehir Tren Garı (YHT)", category: "Ulasim", latitude: 39.7780, longitude: 30.5120, description: "Yüksek Hızlı Tren İstasyonu" },
+                    { locationKey: "eskisehir-otogar", title: "Eskişehir Şehirlerarası Otogar", category: "Ulasim", latitude: 39.7680, longitude: 30.5650, description: "Şehirlerarası Otobüs Terminali" }
+                ]
+            },
+            {
+                id: 13, key: "akdeniz", name: "Akdeniz Üniversitesi (Antalya)", city: "Antalya",
+                lat: 36.8965, lng: 30.6550, zoom: 14,
+                places: [
+                    { locationKey: "akdeniz-merkez", title: "Akdeniz Üniversitesi Merkez Kampüs", category: "Kampus", latitude: 36.8965, longitude: 30.6550, description: "Konyaaltı Kampüsü Ana Giriş" },
+                    { locationKey: "olbia-carsi", title: "Olbia Çarşısı & Kütüphane", category: "Kampus", latitude: 36.8980, longitude: 30.6540, description: "Olbia Çarşısı Öğrenci Merkezi" },
+                    { locationKey: "akdeniz-tip", title: "Akdeniz Tıp Fakültesi Hastanesi", category: "Kampus", latitude: 36.8920, longitude: 30.6520, description: "Araştırma ve Uygulama Hastanesi" },
+                    { locationKey: "elmalili-kyk", title: "Elmalılı Hamdi Yazır KYK Yurdu", category: "Yurt", latitude: 36.9030, longitude: 30.6580, description: "Antalya KYK Yurdu" },
+                    { locationKey: "sehzade-korkut-kyk", title: "Şehzade Korkut Erkek Yurdu", category: "Yurt", latitude: 36.9010, longitude: 30.6620, description: "KYK Erkek Yurdu" },
+                    { locationKey: "akdeniz-tramvay", title: "Kampüs Tramvay İstasyonu", category: "Ulasim", latitude: 36.8985, longitude: 30.6620, description: "Antray Tramvay Durağı" },
+                    { locationKey: "antalya-otogar", title: "Antalya Şehirlerarası Otogar", category: "Ulasim", latitude: 36.9210, longitude: 30.6670, description: "Antalya Terminali" },
+                    { locationKey: "kultur-mahallesi", title: "Kültür Mahallesi (Kafeler)", category: "Sosyal", latitude: 36.9025, longitude: 30.6510, description: "Öğrencilerin Kafeler ve Sosyal Alanı" },
+                    { locationKey: "meltem-mahallesi", title: "Meltem Mahallesi", category: "Sosyal", latitude: 36.8910, longitude: 30.6650, description: "Meltem Öğrenci Bölgesi" },
+                    { locationKey: "konyaalti-sahili", title: "Konyaaltı Sahili", category: "Sosyal", latitude: 36.8790, longitude: 30.6480, description: "Akdeniz Sahil Şeridi" },
+                    { locationKey: "markantalya-avm", title: "MarkAntalya AVM", category: "Sosyal", latitude: 36.8940, longitude: 30.7040, description: "Şehir Merkezi AVM" }
+                ]
+            },
+            {
+                id: 14, key: "uludag", name: "Bursa Uludağ Üniversitesi (Görükle)", city: "Bursa",
+                lat: 40.2240, lng: 28.8710, zoom: 14,
+                places: [
+                    { locationKey: "uludag-gorukle", title: "Görükle Merkez Kampüsü", category: "Kampus", latitude: 40.2240, longitude: 28.8710, description: "Uludağ Üniversitesi Ana Yerleşke" },
+                    { locationKey: "uludag-kutuphane", title: "Halil İnalcık Kütüphanesi", category: "Kampus", latitude: 40.2260, longitude: 28.8730, description: "Merkez Kütüphane" },
+                    { locationKey: "mete-cengiz-kultur", title: "Mete Cengiz Kültür Merkezi", category: "Kampus", latitude: 40.2230, longitude: 28.8680, description: "Kültür ve Kongre Merkezi" },
+                    { locationKey: "gorukle-yerlesim", title: "Görükle Yerleşim (Öğrenci Meydanı)", category: "Sosyal", latitude: 40.2285, longitude: 28.8470, description: "Bursa'nın Öğrenci Şehri Görükle" },
+                    { locationKey: "nilufer-kyk", title: "Nilüfer KYK Öğrenci Yurdu", category: "Yurt", latitude: 40.2210, longitude: 28.8750, description: "Görükle KYK Yurtları" },
+                    { locationKey: "uludag-metro", title: "Üniversite Bursaray İstasyonu", category: "Ulasim", latitude: 40.2250, longitude: 28.8760, description: "Bursaray Metro Son Durak" },
+                    { locationKey: "bursa-otogar", title: "Bursa Şehirlerarası Otogar", category: "Ulasim", latitude: 40.2640, longitude: 29.0550, description: "Bursa Terminali" },
+                    { locationKey: "fsm-bulvari", title: "FSM Bulvarı Nilüfer", category: "Sosyal", latitude: 40.2130, longitude: 28.9870, description: "Fatih Sultan Mehmet Bulvarı" },
+                    { locationKey: "podyumpark", title: "PodyumPark AVM", category: "Sosyal", latitude: 40.2190, longitude: 28.9680, description: "PodyumPark Yaşam Alanı" }
+                ]
+            },
+            {
+                id: 15, key: "selcuk", name: "Selçuk Üniversitesi (Konya/Bosna)", city: "Konya",
+                lat: 38.0260, lng: 32.5110, zoom: 14,
+                places: [
+                    { locationKey: "selcuk-alaeddin", title: "Alaeddin Keykubat Kampüsü", category: "Kampus", latitude: 38.0260, longitude: 32.5110, description: "Selçuk Üni Ana Yerleşkesi" },
+                    { locationKey: "selcuk-kutuphane", title: "Selçuklu Merkez Kütüphanesi", category: "Kampus", latitude: 38.0275, longitude: 32.5130, description: "Merkez Kütüphane" },
+                    { locationKey: "selcuk-tip", title: "Selçuk Tıp Fakültesi Hastanesi", category: "Kampus", latitude: 38.0230, longitude: 32.5080, description: "Tıp Fakültesi Hastanesi" },
+                    { locationKey: "bosna-hersek", title: "Bosna Hersek Mah. (Öğrenci Çarşısı)", category: "Sosyal", latitude: 38.0120, longitude: 32.5270, description: "Konya'nın Öğrenci Merkezi Bosna" },
+                    { locationKey: "alaeddin-kyk", title: "Alaeddin KYK Öğrenci Yurdu", category: "Yurt", latitude: 38.0310, longitude: 32.5070, description: "Kampüs içi KYK Yurdu" },
+                    { locationKey: "selcuk-tramvay", title: "Kampüs Tramvay Son Durak", category: "Ulasim", latitude: 38.0240, longitude: 32.5150, description: "Konya Tramvayı Kampüs Durağı" },
+                    { locationKey: "konya-otogar", title: "Konya Otogarı", category: "Ulasim", latitude: 37.9540, longitude: 32.5100, description: "Konya Otobüs Terminali" },
+                    { locationKey: "konya-yht", title: "Konya YHT Hızlı Tren Garı", category: "Ulasim", latitude: 37.8680, longitude: 32.4830, description: "Yüksek Hızlı Tren Garı" },
+                    { locationKey: "zafer-meydani", title: "Alaeddin Tepesi & Zafer", category: "Sosyal", latitude: 37.8730, longitude: 32.4930, description: "Konya Şehir Merkezi" }
+                ]
+            },
+            {
+                id: 16, key: "kou", name: "Kocaeli Üniversitesi (Umuttepe)", city: "Kocaeli",
+                lat: 40.8210, lng: 29.9230, zoom: 14,
+                places: [
+                    { locationKey: "kou-umuttepe", title: "Umuttepe Merkez Kampüsü", category: "Kampus", latitude: 40.8210, longitude: 29.9230, description: "KOÜ Umuttepe Yerleşkesi" },
+                    { locationKey: "kou-kultur-merkezi", title: "Prof. Dr. Baki Komsuoğlu Kültür Mrk.", category: "Kampus", latitude: 40.8225, longitude: 29.9250, description: "Merkez Kongre ve Kültür" },
+                    { locationKey: "kou-hastane", title: "KOÜ Araştırma ve Uygulama Hastanesi", category: "Kampus", latitude: 40.8190, longitude: 29.9210, description: "Umuttepe Tıp Hastanesi" },
+                    { locationKey: "umuttepe-kyk", title: "Umuttepe KYK Öğrenci Yurdu", category: "Yurt", latitude: 40.8250, longitude: 29.9270, description: "Kampüs Yanı KYK Yurtları" },
+                    { locationKey: "izmit-otogar", title: "İzmit Şehirlerarası Otogarı", category: "Ulasim", latitude: 40.7740, longitude: 29.9720, description: "Kocaeli Şehirlerarası Terminali" },
+                    { locationKey: "izmit-yht", title: "İzmit YHT Tren Garı", category: "Ulasim", latitude: 40.7630, longitude: 29.9210, description: "Hızlı Tren Garı" },
+                    { locationKey: "yuruyus-yolu", title: "İzmit Yürüyüş Yolu & Belsa", category: "Sosyal", latitude: 40.7650, longitude: 29.9320, description: "İzmit Merkez Yürüyüş Yolu" },
+                    { locationKey: "symbol-avm", title: "Symbol Kocaeli AVM", category: "Sosyal", latitude: 40.7680, longitude: 29.9650, description: "Symbol Alışveriş & Yaşam Merkezi" }
+                ]
+            },
+            {
+                id: 17, key: "sau", name: "Sakarya Üniversitesi (Esentepe/Serdivan)", city: "Sakarya",
+                lat: 40.7410, lng: 30.3340, zoom: 14,
+                places: [
+                    { locationKey: "sau-esentepe", title: "Esentepe Kampüsü (Ana Giriş)", category: "Kampus", latitude: 40.7410, longitude: 30.3340, description: "Sapanca Manzaralı Esentepe Kampüsü" },
+                    { locationKey: "sau-kutuphane", title: "Turgut Özal Kütüphanesi", category: "Kampus", latitude: 40.7425, longitude: 30.3325, description: "SAÜ Merkez Kütüphane" },
+                    { locationKey: "zaim-kyk", title: "Sabahattin Zaim KYK Yurdu", category: "Yurt", latitude: 40.7380, longitude: 30.3380, description: "Kampüs içi KYK Yurdu" },
+                    { locationKey: "mavi-durak", title: "Serdivan Mavi Durak (Kafeler)", category: "Sosyal", latitude: 40.7620, longitude: 30.3650, description: "Öğrencilerin Buluşma Merkezi Mavi Durak" },
+                    { locationKey: "serdivan-avm", title: "Serdivan AVM & Cadde54", category: "Sosyal", latitude: 40.7650, longitude: 30.3620, description: "Cadde54 ve Serdivan Alışveriş Alanı" },
+                    { locationKey: "sakarya-otogar", title: "Sakarya Şehirlerarası Otogar", category: "Ulasim", latitude: 40.7180, longitude: 30.4020, description: "Sakarya Büyükşehir Terminali" },
+                    { locationKey: "cark-caddesi", title: "Adapazarı Çark Caddesi", category: "Sosyal", latitude: 40.7720, longitude: 30.3950, description: "Adapazarı Şehir Merkezi" }
+                ]
+            },
+            {
+                id: 18, key: "ktu", name: "Karadeniz Teknik Üniversitesi (Trabzon)", city: "Trabzon",
+                lat: 40.9950, lng: 39.7710, zoom: 14,
+                places: [
+                    { locationKey: "ktu-kanuni", title: "Kanuni Merkez Kampüsü", category: "Kampus", latitude: 40.9950, longitude: 39.7710, description: "KTÜ Kanuni Yerleşkesi" },
+                    { locationKey: "ktu-kutuphane", title: "Faik Ahmet Barutçu Kütüphanesi", category: "Kampus", latitude: 40.9965, longitude: 39.7730, description: "KTÜ Merkez Kütüphanesi" },
+                    { locationKey: "ktu-farabi", title: "Farabi Tıp Fakültesi Hastanesi", category: "Kampus", latitude: 40.9930, longitude: 39.7680, description: "Farabi Hastanesi" },
+                    { locationKey: "ktu-kyk", title: "Doğu Karadeniz KYK Yurdu", category: "Yurt", latitude: 40.9980, longitude: 39.7740, description: "KTÜ Yanı KYK Yurdu" },
+                    { locationKey: "trabzon-havalimani", title: "Trabzon Havalimanı", category: "Ulasim", latitude: 40.9910, longitude: 39.7890, description: "Kampüs Bitişiği Havalimanı" },
+                    { locationKey: "trabzon-otogar", title: "Trabzon Şehirlerarası Otogar", category: "Ulasim", latitude: 41.0020, longitude: 39.7480, description: "Trabzon Otobüs Terminali" },
+                    { locationKey: "trabzon-meydan", title: "Trabzon Meydan Parkı (Maraş Cad.)", category: "Sosyal", latitude: 41.0060, longitude: 39.7270, description: "Trabzon Şehir Merkezi" },
+                    { locationKey: "forum-trabzon", title: "Forum Trabzon AVM", category: "Sosyal", latitude: 40.9980, longitude: 39.7560, description: "Forum Alışveriş Merkezi" },
+                    { locationKey: "kalkinma-mahallesi", title: "Kalkınma Mah. (Öğrenci Kafeleri)", category: "Sosyal", latitude: 40.9970, longitude: 39.7640, description: "Öğrencilerin Yaşam ve Kafe Alanı" }
+                ]
+            }
+        ];
 
+        // ==========================================
+        // 2. HARİTA OLUŞTURMA & ESRI ALT TABANI
+        // ==========================================
         window.mapReady = false;
-
-        // Default to Turkey bounding box (Users can view anywhere across Turkey)
-        const turkeySouthWest = [25.5, 35.8];
-        const turkeyNorthEast = [44.8, 42.2];
-        const turkeyBounds = new maplibregl.LngLatBounds(turkeySouthWest, turkeyNorthEast);
-
-        // Initial default center: Süleyman Demirel Üniversitesi / Isparta
-        const defaultCenter = [30.5345, 37.8285];
+        let currentMarkers = [];
+        let currentSelectedPlace = null;
+        let activeCategoryFilter = 'all';
+        let currentLoadedPlaces = [];
 
         const map = new maplibregl.Map({
             container: "map",
@@ -166,57 +551,124 @@
                             'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}'
                         ],
                         tileSize: 256,
-                        attribution: '© Esri, HERE, Garmin, OpenStreetMap contributors'
+                        attribution: '© Esri, HERE, Garmin, OpenStreetMap'
                     }
                 },
                 layers: [
                     { id: 'esri-tiles', type: 'raster', source: 'esri-tiles' }
                 ]
             },
-            center: defaultCenter,
+            center: [30.5345, 37.8285], // Varsayılan: Isparta SDÜ
             zoom: 14,
             minZoom: 5,
             maxZoom: 18,
             renderWorldCopies: false
         });
 
-        // Set max bounds to Turkey so user doesn't get lost abroad, but can move freely inside Turkey
-        map.setMaxBounds(turkeyBounds);
+        map.addControl(new maplibregl.NavigationControl(), "top-right");
 
-        map.addControl(
-            new maplibregl.NavigationControl(),
-            "top-right"
-        );
-
-        let currentMarkers = [];
-        let userMarker = null;
-
-        // Colors per category
-        const categoryColors = {
-            'Kampus': '#007AFF', // Blue
-            'Yurt': '#34C759',    // Green
-            'Ulasim': '#FF9500',  // Orange
-            'Sosyal': '#AF52DE',  // Purple
-            'Diger': '#8E8E93'    // Gray
+        // Kategori Renkleri
+        const categoryMeta = {
+            'Kampus': { color: '#007AFF', label: 'Kampüs' },
+            'Yurt': { color: '#34C759', label: 'KYK / Yurt' },
+            'Ulasim': { color: '#FF9500', label: 'Ulaşım' },
+            'Sosyal': { color: '#AF52DE', label: 'Sosyal / AVM' },
+            'Diger': { color: '#8E8E93', label: 'Diğer' }
         };
 
-        function getCategoryColor(category) {
-            return categoryColors[category] || '#FF6A00';
+        function getCategoryMeta(cat) {
+            return categoryMeta[cat] || { color: '#1D9DE5', label: cat || 'Nokta' };
         }
 
-        function createPinElement(category) {
-            const color = getCategoryColor(category);
-            const svg = `
-                <svg class="pin-marker" viewBox="0 0 24 32" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 0C7 0 3.5 3.6 3.5 8.1c0 5.9 7.8 15.8 7.9 15.9.2-.1 7.9-10 7.9-15.9C20.5 3.6 17 0 12 0z" fill="${color}" stroke="#fff" stroke-width="1.5"/>
-                  <circle cx="12" cy="8.1" r="3.5" fill="#fff"/>
+        // SVG Pin İkonu Üretici
+        function createPinSvg(color) {
+            return `
+                <svg class="pin-icon" viewBox="0 0 24 32" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 0C7 0 3.5 3.6 3.5 8.1c0 5.9 7.8 15.8 7.9 15.9.2-.1 7.9-10 7.9-15.9C20.5 3.6 17 0 12 0z" fill="${color}" stroke="#ffffff" stroke-width="1.6"/>
+                    <circle cx="12" cy="8.1" r="3.6" fill="#ffffff"/>
                 </svg>`;
-            const wrapper = document.createElement('div');
-            wrapper.innerHTML = svg;
-            const pin = wrapper.firstElementChild;
-            pin.setAttribute('role', 'button');
-            pin.setAttribute('tabindex', '0');
-            return pin;
+        }
+
+        // Pin ve Etiketleri Haritaya Basma
+        function renderMarkers(places) {
+            currentMarkers.forEach(m => m.remove());
+            currentMarkers = [];
+
+            if (!places || !Array.isArray(places)) return;
+
+            places.forEach(place => {
+                if (activeCategoryFilter !== 'all' && place.category !== activeCategoryFilter) {
+                    return;
+                }
+
+                const lat = place.latitude !== undefined ? place.latitude : (place.coords ? place.coords[1] : null);
+                const lng = place.longitude !== undefined ? place.longitude : (place.coords ? place.coords[0] : null);
+                if (lat == null || lng == null) return;
+
+                const coords = [parseFloat(lng), parseFloat(lat)];
+                const meta = getCategoryMeta(place.category);
+
+                // 1. SVG Pin İkonu
+                const pinWrap = document.createElement('div');
+                pinWrap.className = 'pin-wrapper';
+                pinWrap.innerHTML = createPinSvg(meta.color);
+                pinWrap.onclick = function (e) {
+                    e.stopPropagation();
+                    showPlaceSheet(place);
+                };
+
+                // 2. Metin Etiketi (Pin Altında Görünür)
+                const tagEl = document.createElement('div');
+                tagEl.className = 'place-tag';
+                tagEl.innerHTML = `<span class="category-dot" style="background-color:${meta.color}"></span>${place.title || place.location}`;
+                tagEl.onclick = function (e) {
+                    e.stopPropagation();
+                    showPlaceSheet(place);
+                };
+
+                const pinMarker = new maplibregl.Marker(pinWrap, { offset: [0, -16] })
+                    .setLngLat(coords)
+                    .addTo(map);
+
+                const tagMarker = new maplibregl.Marker(tagEl, { offset: [0, -44] })
+                    .setLngLat(coords)
+                    .addTo(map);
+
+                currentMarkers.push(pinMarker, tagMarker);
+            });
+        }
+
+        // ==========================================
+        // 3. ALT BİLGİ KARTI & SEÇİM MEKANİZMASI
+        // ==========================================
+        function showPlaceSheet(place) {
+            currentSelectedPlace = place;
+            const meta = getCategoryMeta(place.category);
+
+            const badge = document.getElementById('sheetCategoryBadge');
+            badge.textContent = meta.label;
+            badge.style.backgroundColor = meta.color;
+
+            document.getElementById('sheetTitle').textContent = place.title || place.location || 'Konum';
+            document.getElementById('sheetDesc').textContent = place.description || `${meta.label} · Rota noktası olarak kullanılabilir`;
+
+            const sheet = document.getElementById('selectionSheet');
+            sheet.classList.add('visible');
+
+            // Kamerayı hafifçe yukarı alarak pinin kart arkasında kalmasını engelle
+            const lat = place.latitude !== undefined ? place.latitude : place.coords[1];
+            const lng = place.longitude !== undefined ? place.longitude : place.coords[0];
+            map.flyTo({ center: [parseFloat(lng), parseFloat(lat) - 0.003], speed: 0.8 });
+        }
+
+        function closeSheet() {
+            document.getElementById('selectionSheet').classList.remove('visible');
+            currentSelectedPlace = null;
+        }
+
+        function confirmCurrentSelection() {
+            if (!currentSelectedPlace) return;
+            sendLocationSelection(currentSelectedPlace);
         }
 
         function sendLocationSelection(place) {
@@ -224,183 +676,124 @@
                 type: 'locationSelected',
                 locationKey: place.locationKey || place.key || '',
                 location: place.title || place.location || '',
-                latitude: place.latitude !== undefined ? place.latitude : place.coords[1],
-                longitude: place.longitude !== undefined ? place.longitude : place.coords[0]
+                latitude: place.latitude !== undefined ? place.latitude : (place.coords ? place.coords[1] : 0),
+                longitude: place.longitude !== undefined ? place.longitude : (place.coords ? place.coords[0] : 0)
             };
 
-            const encoded = encodeURIComponent(JSON.stringify(message));
-            window.location.href = 'app://locationSelected?data=' + encoded;
-        }
+            const jsonStr = JSON.stringify(message);
 
-        function bindSelection(element, place) {
-            element.setAttribute('aria-label', (place.title || place.location) + ' seç');
-            element.addEventListener('click', function (event) {
-                event.preventDefault();
-                event.stopPropagation();
-                sendLocationSelection(place);
-            });
-            element.addEventListener('keydown', function (event) {
-                if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    sendLocationSelection(place);
-                }
-            });
-        }
-
-        // Dynamically loads campus place markers from API JSON
-        window.loadCampusPlaces = function (places) {
+            // 1. C# MAUI Windows WebView2 PostMessage
             try {
-                if (typeof places === 'string') {
-                    places = JSON.parse(places);
+                if (window.chrome && window.chrome.webview && window.chrome.webview.postMessage) {
+                    window.chrome.webview.postMessage(message);
                 }
+            } catch (e) { }
 
-                // Remove existing markers
-                currentMarkers.forEach(m => m.remove());
-                currentMarkers = [];
+            // 2. App URL Scheme Navigating Fallback
+            try {
+                const encoded = encodeURIComponent(jsonStr);
+                window.location.href = 'app://locationSelected?data=' + encoded;
+            } catch (e) { }
 
-                if (!places || !Array.isArray(places)) {
-                    console.warn('places is not an array');
-                    return;
-                }
+            closeSheet();
+        }
 
-                places.forEach(place => {
-                    const lat = place.latitude !== undefined ? place.latitude : (place.coords ? place.coords[1] : null);
-                    const lng = place.longitude !== undefined ? place.longitude : (place.coords ? place.coords[0] : null);
-                    if (lat == null || lng == null) return;
+        // Boş alana tıklanınca kartı kapat
+        map.on('click', function () {
+            closeSheet();
+        });
 
-                    const coords = [parseFloat(lng), parseFloat(lat)];
-                    const category = place.category || 'Kampus';
-                    const color = getCategoryColor(category);
+        // ==========================================
+        // 4. ÜNİVERSİTE DEĞİŞTİRME & ODAKLANMA
+        // ==========================================
+        function populateDropdown(universities) {
+            const select = document.getElementById('universitySelect');
+            select.innerHTML = '';
+            universities.forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u.id || u.key;
+                opt.textContent = `${u.city} · ${u.name}`;
+                select.appendChild(opt);
+            });
+        }
 
-                    const pinEl = createPinElement(category);
-                    bindSelection(pinEl, place);
-
-                    const labelEl = document.createElement('div');
-                    labelEl.className = 'place-label';
-                    labelEl.innerHTML = `<span class="category-badge" style="background-color:${color}"></span>${place.title || place.location}`;
-                    labelEl.setAttribute('role', 'button');
-                    labelEl.setAttribute('tabindex', '0');
-                    bindSelection(labelEl, place);
-
-                    const pinMarker = new maplibregl.Marker(pinEl, { offset: [0, -16] })
-                        .setLngLat(coords)
-                        .addTo(map);
-
-                    const labelMarker = new maplibregl.Marker(labelEl, { offset: [0, -42] })
-                        .setLngLat(coords)
-                        .addTo(map);
-
-                    currentMarkers.push(pinMarker, labelMarker);
-                });
-
-                console.log('Loaded ' + places.length + ' campus place markers dynamically');
-            } catch (e) {
-                console.error('loadCampusPlaces error:', e);
+        function onUniversityDropdownChanged(val) {
+            const target = CAMPUS_CATALOG.find(u => String(u.id) === String(val) || u.key === val);
+            if (target) {
+                focusAndLoadUniversity(target);
             }
+        }
+
+        function focusAndLoadUniversity(uni) {
+            closeSheet();
+            const select = document.getElementById('universitySelect');
+            if (select) select.value = uni.id || uni.key;
+
+            map.flyTo({
+                center: [uni.lng, uni.lat],
+                zoom: uni.zoom || 14,
+                speed: 1.4,
+                essential: true
+            });
+
+            currentLoadedPlaces = uni.places || [];
+            renderMarkers(currentLoadedPlaces);
+        }
+
+        function filterCategory(cat, btn) {
+            activeCategoryFilter = cat;
+            document.querySelectorAll('.filter-pills .pill').forEach(p => p.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            renderMarkers(currentLoadedPlaces);
+        }
+
+        // ==========================================
+        // 5. DIŞARIDAN (C# MAUI) ÇAĞRILABİLEN FONKSİYONLAR
+        // ==========================================
+
+        // ID veya İsme Göre Üniversiteye Odaklan
+        window.selectUniversityById = function (id) {
+            const uni = CAMPUS_CATALOG.find(u => String(u.id) === String(id));
+            if (uni) {
+                focusAndLoadUniversity(uni);
+                return true;
+            }
+            return false;
         };
 
-        // Smoothly focuses map to a university campus
         window.focusUniversity = function (lat, lng, zoom) {
             try {
                 lat = parseFloat(lat);
                 lng = parseFloat(lng);
                 zoom = zoom ? parseInt(zoom) : 14;
-
-                map.flyTo({
-                    center: [lng, lat],
-                    zoom: zoom,
-                    essential: true,
-                    speed: 1.2
-                });
-                console.log('Focused university at:', lat, lng);
-            } catch (e) {
-                console.error('focusUniversity error:', e);
-            }
+                map.flyTo({ center: [lng, lat], zoom: zoom, speed: 1.2, essential: true });
+            } catch (e) { }
         };
-        window.setCampusLocation = window.focusUniversity;
 
-        // Default SDU places as fallback
-        const defaultPlaces = [
-            { locationKey: 'dogu-kampusu', title: 'Doğu Kampüsü', category: 'Kampus', latitude: 37.8285, longitude: 30.5345 },
-            { locationKey: 'bati-kampusu', title: 'Batı Kampüsü', category: 'Kampus', latitude: 37.829387, longitude: 30.526435 },
-            { locationKey: '100-yil', title: '100. Yıl Yerleşkesi', category: 'Kampus', latitude: 37.759684, longitude: 30.548229 },
-            { locationKey: 'iyas', title: 'Iyaş Park AVM', category: 'Sosyal', latitude: 37.782036, longitude: 30.544647 },
-            { locationKey: 'sehir-merkezi', title: 'Şehir Merkezi (Meydan)', category: 'Sosyal', latitude: 37.7630, longitude: 30.5547 },
-            { locationKey: 'otogar', title: 'Otogar', category: 'Ulasim', latitude: 37.810293, longitude: 30.537214 },
-            { locationKey: 'erkek-yurdu', title: 'Erkek Yurdu', category: 'Yurt', latitude: 37.782313, longitude: 30.561886 },
-            { locationKey: 'mihrihatun-kiz-yurdu', title: 'MihriHatun Kız Yurdu', category: 'Yurt', latitude: 37.854985, longitude: 30.531456 },
-            { locationKey: 'meydan-avm', title: 'Meydan AVM', category: 'Sosyal', latitude: 37.764732, longitude: 30.550920 },
-            { locationKey: 'sehir-hastanesi', title: 'Şehir Hastanesi', category: 'Sosyal', latitude: 37.776919, longitude: 30.561183 }
-        ];
+        // Backend API'den gelen dinamik durakları haritaya bas
+        window.loadCampusPlaces = function (places) {
+            try {
+                while (typeof places === 'string') {
+                    places = JSON.parse(places);
+                }
+                if (places && Array.isArray(places) && places.length > 0) {
+                    currentLoadedPlaces = places;
+                    renderMarkers(currentLoadedPlaces);
+                }
+            } catch (e) { }
+        };
 
+        // ==========================================
+        // 6. HARİTA BAŞLATMA
+        // ==========================================
         map.on('load', function () {
             window.mapReady = true;
-            console.log('MapLibre GL Map ready');
-            window.loadCampusPlaces(defaultPlaces);
+            populateDropdown(CAMPUS_CATALOG);
+
+            // Varsayılan olarak ilk üniversiteyi (Isparta SDÜ) yükle
+            focusAndLoadUniversity(CAMPUS_CATALOG[0]);
+            console.log('KampusRota MapLibre Multi-Campus Map Ready with 18 Universities');
         });
-
-        // Set user live location
-        window.setUserLocation = function (lat, lng) {
-            try {
-                lat = parseFloat(lat);
-                lng = parseFloat(lng);
-                const position = [lng, lat];
-
-                if (userMarker == null) {
-                    const element = document.createElement('div');
-                    element.className = 'user-marker';
-
-                    userMarker = new maplibregl.Marker(element)
-                        .setLngLat(position)
-                        .setPopup(new maplibregl.Popup({ offset: 25 }).setText('Konumunuz'))
-                        .addTo(map);
-                } else {
-                    userMarker.setLngLat(position);
-                }
-
-                map.flyTo({ center: position, zoom: 15, speed: 1 });
-                console.log('User location updated to:', lat, lng);
-            } catch (error) {
-                console.error('setUserLocation error:', error);
-            }
-        };
-
-        // Draw route polyline between coordinates
-        const routeSourceId = 'route-source';
-        const routeLayerId = 'route-layer';
-
-        window.drawRoute = function (routeCoordinates) {
-            try {
-                const convertedCoordinates = routeCoordinates.map(point => [parseFloat(point[1]), parseFloat(point[0])]);
-                const geojson = { type: 'Feature', geometry: { type: 'LineString', coordinates: convertedCoordinates } };
-
-                if (map.getSource(routeSourceId)) {
-                    map.getSource(routeSourceId).setData(geojson);
-                } else {
-                    map.addSource(routeSourceId, { type: 'geojson', data: geojson });
-                    map.addLayer({
-                        id: routeLayerId,
-                        type: 'line',
-                        source: routeSourceId,
-                        layout: { 'line-join': 'round', 'line-cap': 'round' },
-                        paint: { 'line-color': '#007AFF', 'line-width': 6, 'line-opacity': 0.9 }
-                    });
-                }
-
-                if (convertedCoordinates.length > 0) {
-                    const bounds = convertedCoordinates.reduce(
-                        (bounds, coord) => bounds.extend(coord),
-                        new maplibregl.LngLatBounds(convertedCoordinates[0], convertedCoordinates[0])
-                    );
-                    map.fitBounds(bounds, { padding: 60, maxZoom: 16, duration: 1500 });
-                }
-
-                console.log('Route drawn successfully');
-            } catch (error) {
-                console.error('drawRoute error:', error);
-            }
-        };
-
     </script>
 </body>
 

@@ -22,6 +22,7 @@ namespace KampusRotaUI.Models
         public int UniversityId { get; set; }
         public string LocationKey { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
+        public string Name => Title;
         public double Latitude { get; set; }
         public double Longitude { get; set; }
         public string Category { get; set; } = "Kampus";

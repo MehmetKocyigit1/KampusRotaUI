@@ -196,7 +196,7 @@
                                 <Label Text="Haritadan pin seçebilir veya mevcut konumuna en yakın durağı kullanabilirsin." FontSize="12" TextColor="#4A7898" LineBreakMode="WordWrap" />
                             </VerticalStackLayout>
 
-                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
                                 <Border Stroke="#BDDDED" StrokeThickness="1" StrokeShape="RoundRectangle 16" BackgroundColor="#F3FBFF" Padding="13,0" HeightRequest="54">
                                     <Border.GestureRecognizers>
                                         <TapGestureRecognizer Tapped="OnStartLocationTapped" />
@@ -206,29 +206,32 @@
                                         <Picker x:Name="StartPicker" IsVisible="False">
                                             <Picker.Items>
                                                 <x:String>Mevcut Konum</x:String>
-                                                <x:String>Iyaş</x:String>
-                                                <x:String>Doğu Kampüsü</x:String>
-                                                <x:String>Batı Kampüsü</x:String>
-                                                <x:String>100. Yıl Yerleşkesi</x:String>
-                                                <x:String>Erkek Yurdu</x:String>
-                                                <x:String>MihriHatun Kız Yurdu</x:String>
-                                                <x:String>Şehir Merkezi (Meydan)</x:String>
-                                                <x:String>Otogar</x:String>
                                             </Picker.Items>
                                         </Picker>
                                     </Grid>
                                 </Border>
 
                                 <Button Grid.Column="1"
-                                        Text="Konumum"
-                                        Clicked="OnUseCurrentLocationClicked"
+                                        Text="Harita"
+                                        Clicked="OnStartMapClicked"
                                         BackgroundColor="#D6EEFB"
                                         TextColor="#174A72"
                                         FontSize="12"
                                         FontAttributes="Bold"
                                         CornerRadius="15"
                                         HeightRequest="54"
-                                        WidthRequest="96" />
+                                        WidthRequest="70" />
+
+                                <Button Grid.Column="2"
+                                        Text="Konum"
+                                        Clicked="OnUseCurrentLocationClicked"
+                                        BackgroundColor="#EAF6FD"
+                                        TextColor="#1D9DE5"
+                                        FontSize="12"
+                                        FontAttributes="Bold"
+                                        CornerRadius="15"
+                                        HeightRequest="54"
+                                        WidthRequest="70" />
                             </Grid>
 
                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
@@ -245,18 +248,7 @@
                                                 <TapGestureRecognizer Tapped="OnDestinationLocationTapped" />
                                             </Label.GestureRecognizers>
                                         </Label>
-                                        <Picker x:Name="DestinationPicker" IsVisible="False">
-                                            <Picker.Items>
-                                                <x:String>Iyaş</x:String>
-                                                <x:String>Doğu Kampüsü</x:String>
-                                                <x:String>Batı Kampüsü</x:String>
-                                                <x:String>100. Yıl Yerleşkesi</x:String>
-                                                <x:String>Erkek Yurdu</x:String>
-                                                <x:String>MihriHatun Kız Yurdu</x:String>
-                                                <x:String>Şehir Merkezi (Meydan)</x:String>
-                                                <x:String>Otogar</x:String>
-                                            </Picker.Items>
-                                        </Picker>
+                                        <Picker x:Name="DestinationPicker" IsVisible="False" />
                                     </Grid>
                                 </Border>
 
@@ -292,21 +284,29 @@
         <!-- Map View -->
         <Grid x:Name="MapContainer" Grid.Row="0" IsVisible="False">
             <WebView x:Name="MapWebView" />
-            <Button Text="Kapat"
-                    Clicked="OnCloseMapClicked"
-                    BackgroundColor="#EAF6FD"
-                    TextColor="#111827"
-                    FontAttributes="Bold"
-                    CornerRadius="18"
-                    Padding="18,0"
-                    HeightRequest="40"
-                    HorizontalOptions="End"
-                    VerticalOptions="Start"
-                    Margin="0,16,16,0">
-                <Button.Shadow>
-                    <Shadow Brush="#55000000" Offset="0,3" Radius="8" Opacity="0.35" />
-                </Button.Shadow>
-            </Button>
+            
+            <!-- Floating Top Header Bar -->
+            <Grid VerticalOptions="Start" Padding="16,14" ColumnDefinitions="*,Auto" Margin="0,4,0,0">
+                <Border BackgroundColor="#E6102A43" Stroke="Transparent" StrokeShape="RoundRectangle 20" Padding="16,8" HorizontalOptions="Start">
+                    <Label x:Name="MainMapHeaderLabel" Text="📍 Kalkış Noktası Seçin" FontSize="13" FontAttributes="Bold" TextColor="White" VerticalOptions="Center" />
+                </Border>
+                
+                <Button Grid.Column="1"
+                        Text="✕ Kapat"
+                        Clicked="OnCloseMapClicked"
+                        BackgroundColor="#EAF6FD"
+                        TextColor="#102A43"
+                        FontAttributes="Bold"
+                        CornerRadius="18"
+                        Padding="16,0"
+                        HeightRequest="38"
+                        HorizontalOptions="End"
+                        VerticalOptions="Center">
+                    <Button.Shadow>
+                        <Shadow Brush="#55000000" Offset="0,3" Radius="8" Opacity="0.35" />
+                    </Button.Shadow>
+                </Button>
+            </Grid>
         </Grid>
 
     </Grid>

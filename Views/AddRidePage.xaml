@@ -32,18 +32,7 @@
                             </Border.GestureRecognizers>
                             <Grid VerticalOptions="Center">
                                 <Label x:Name="DepartureLocationLabel" Text="Kalkış noktası seçin" FontSize="14" TextColor="#6B7280" VerticalOptions="Center" LineBreakMode="TailTruncation" />
-                                <Picker x:Name="DeparturePicker" IsVisible="False">
-                                    <Picker.Items>
-                                        <x:String>Iyaş</x:String>
-                                        <x:String>Doğu Kampüsü</x:String>
-                                        <x:String>Batı Kampüsü</x:String>
-                                        <x:String>100. Yıl Yerleşkesi</x:String>
-                                        <x:String>Erkek Yurdu</x:String>
-                                        <x:String>MihriHatun Kız Yurdu</x:String>
-                                        <x:String>Şehir Merkezi (Meydan)</x:String>
-                                        <x:String>Otogar</x:String>
-                                    </Picker.Items>
-                                </Picker>
+                                <Picker x:Name="DeparturePicker" IsVisible="False" />
                             </Grid>
                         </Border>
 
@@ -53,18 +42,7 @@
                             </Border.GestureRecognizers>
                             <Grid VerticalOptions="Center">
                                 <Label x:Name="DestinationLocationLabel" Text="Varış noktası seçin" FontSize="14" TextColor="#6B7280" VerticalOptions="Center" LineBreakMode="TailTruncation" />
-                                <Picker x:Name="DestinationPicker" IsVisible="False">
-                                    <Picker.Items>
-                                        <x:String>Iyaş</x:String>
-                                        <x:String>Doğu Kampüsü</x:String>
-                                        <x:String>Batı Kampüsü</x:String>
-                                        <x:String>100. Yıl Yerleşkesi</x:String>
-                                        <x:String>Erkek Yurdu</x:String>
-                                        <x:String>MihriHatun Kız Yurdu</x:String>
-                                        <x:String>Şehir Merkezi (Meydan)</x:String>
-                                        <x:String>Otogar</x:String>
-                                    </Picker.Items>
-                                </Picker>
+                                <Picker x:Name="DestinationPicker" IsVisible="False" />
                             </Grid>
                         </Border>
 

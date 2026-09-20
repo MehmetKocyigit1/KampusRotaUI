@@ -90,8 +90,9 @@ public partial class MapPage : ContentPage
             if (_universities != null && _universities.Count > 0)
             {
                 UniversityPicker.ItemsSource = _universities;
-                // Default to the first university (e.g. Süleyman Demirel Üniversitesi)
-                UniversityPicker.SelectedIndex = 0;
+                var userUniId = Preferences.Default.Get("UserUniversityId", 0);
+                var targetUni = _universities.FirstOrDefault(u => u.Id == userUniId) ?? _universities[0];
+                UniversityPicker.SelectedItem = targetUni;
             }
         }
         catch (Exception ex)
@@ -113,6 +114,9 @@ public partial class MapPage : ContentPage
 
         try
         {
+            // First call selectUniversityById for instant response from built-in 180+ POI catalog
+            await MapWebView.EvaluateJavaScriptAsync($"if(window.selectUniversityById) {{ window.selectUniversityById({selectedUni.Id}); }}");
+
             // 1. Focus map camera to the selected university campus
             var latStr = selectedUni.Latitude.ToString(CultureInfo.InvariantCulture);
             var lngStr = selectedUni.Longitude.ToString(CultureInfo.InvariantCulture);

@@ -50,6 +50,12 @@ public partial class AddRidePage : ContentPage
         ConfigureWomenOnlyOption();
     }
 
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        await SetupMapForSelectedUniversityAsync();
+    }
+
     private void InitializePage()
     {
         _mapInterop = new MapInterop();
@@ -262,6 +268,7 @@ public partial class AddRidePage : ContentPage
                 _currentMapUniversity = targetUni;
                 MapUniversityPicker.SelectedItem = targetUni;
                 await FocusUniversityOnMapAsync(targetUni);
+                await LoadLocationsForPickersAsync(targetUni.Id);
             }
         }
         catch (Exception ex)
@@ -276,6 +283,7 @@ public partial class AddRidePage : ContentPage
         {
             _currentMapUniversity = selectedUni;
             await FocusUniversityOnMapAsync(selectedUni);
+            await LoadLocationsForPickersAsync(selectedUni.Id);
         }
     }
 
@@ -286,6 +294,8 @@ public partial class AddRidePage : ContentPage
 
         try
         {
+            await MapWebView.EvaluateJavaScriptAsync($"if(window.selectUniversityById) {{ window.selectUniversityById({uni.Id}); }}");
+
             var latStr = uni.Latitude.ToString(CultureInfo.InvariantCulture);
             var lngStr = uni.Longitude.ToString(CultureInfo.InvariantCulture);
             await MapWebView.EvaluateJavaScriptAsync($"focusUniversity({latStr}, {lngStr}, {uni.DefaultZoom});");
@@ -301,6 +311,39 @@ public partial class AddRidePage : ContentPage
         catch (Exception ex)
         {
             Debug.WriteLine($"Harita odaklama hatası: {ex.Message}");
+        }
+    }
+
+    private async Task LoadLocationsForPickersAsync(int universityId)
+    {
+        try
+        {
+            var locations = await _apiService.GetCampusLocationsAsync(universityId);
+            if (locations != null && locations.Count > 0)
+            {
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    var dep = DeparturePicker.SelectedItem?.ToString();
+                    var dest = DestinationPicker.SelectedItem?.ToString();
+
+                    foreach (var loc in locations)
+                    {
+                        if (!DeparturePicker.Items.Contains(loc.Name))
+                            DeparturePicker.Items.Add(loc.Name);
+                        if (!DestinationPicker.Items.Contains(loc.Name))
+                            DestinationPicker.Items.Add(loc.Name);
+                    }
+
+                    if (!string.IsNullOrEmpty(dep) && DeparturePicker.Items.Contains(dep))
+                        DeparturePicker.SelectedItem = dep;
+                    if (!string.IsNullOrEmpty(dest) && DestinationPicker.Items.Contains(dest))
+                        DestinationPicker.SelectedItem = dest;
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"LoadLocationsForPickersAsync error: {ex.Message}");
         }
     }
 

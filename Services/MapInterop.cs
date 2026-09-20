@@ -118,13 +118,18 @@ public class MapInterop
 
     private static string? ResolveLocationName(string? locationKey, string? rawLocationName)
     {
+        if (!string.IsNullOrWhiteSpace(rawLocationName))
+        {
+            return rawLocationName.Trim();
+        }
+
         if (!string.IsNullOrWhiteSpace(locationKey) &&
             LocationNamesByKey.TryGetValue(locationKey, out var canonicalName))
         {
             return canonicalName;
         }
 
-        return NormalizeKnownLocationName(rawLocationName);
+        return locationKey;
     }
 
     private static string? NormalizeKnownLocationName(string? locationName)
