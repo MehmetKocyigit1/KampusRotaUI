@@ -31,36 +31,6 @@
                         </Border>
                     </VerticalStackLayout>
 
-                    <!-- Şehir ve Üniversite Seçimi -->
-                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                        <VerticalStackLayout Spacing="6">
-                            <Label Text="Şehir" FontSize="12" FontAttributes="Bold" TextColor="#74777D" />
-                            <Border BackgroundColor="#F3FBFF" Stroke="#BDDDED" StrokeThickness="1" StrokeShape="RoundRectangle 14" Padding="8,0" HeightRequest="52">
-                                <Picker x:Name="CityPicker"
-                                        Title="Şehir Seçin"
-                                        SelectedIndexChanged="OnCitySelectedIndexChanged"
-                                        TextColor="#111827"
-                                        TitleColor="#9CA3AF"
-                                        FontSize="12"
-                                        VerticalOptions="Center" />
-                            </Border>
-                        </VerticalStackLayout>
-
-                        <VerticalStackLayout Grid.Column="1" Spacing="6">
-                            <Label Text="Üniversite" FontSize="12" FontAttributes="Bold" TextColor="#74777D" />
-                            <Border BackgroundColor="#F3FBFF" Stroke="#BDDDED" StrokeThickness="1" StrokeShape="RoundRectangle 14" Padding="8,0" HeightRequest="52">
-                                <Picker x:Name="UniversityPicker"
-                                        Title="Üniversite Seçin"
-                                        ItemDisplayBinding="{Binding Name}"
-                                        SelectedIndexChanged="OnUniversitySelectedIndexChanged"
-                                        TextColor="#111827"
-                                        TitleColor="#9CA3AF"
-                                        FontSize="12"
-                                        VerticalOptions="Center" />
-                            </Border>
-                        </VerticalStackLayout>
-                    </Grid>
-
                     <VerticalStackLayout Spacing="6">
                         <Label Text="Şifre" FontSize="12" FontAttributes="Bold" TextColor="#74777D" />
                         <Border Stroke="#BDDDED" StrokeThickness="1" StrokeShape="RoundRectangle 14" BackgroundColor="#EAF6FD" Padding="12,0" HeightRequest="52">

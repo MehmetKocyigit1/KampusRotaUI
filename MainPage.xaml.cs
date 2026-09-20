@@ -51,6 +51,10 @@ public partial class MainPage : ContentPage
                     try
                     {
                         var raw = args.TryGetWebMessageAsString();
+                        if (string.IsNullOrEmpty(raw))
+                        {
+                            raw = args.WebMessageAsJson;
+                        }
                         if (!string.IsNullOrEmpty(raw))
                         {
                             _mapInterop.SelectLocation(raw);

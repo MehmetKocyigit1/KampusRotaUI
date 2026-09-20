@@ -59,20 +59,46 @@ public class MapInterop
             using var doc = JsonDocument.Parse(jsonData);
             var root = doc.RootElement;
 
-            var locationKey = TryGetString(root, "locationKey") ?? TryGetString(root, "id") ?? string.Empty;
-            var rawLocationName = TryGetString(root, "location");
+            var locationKey = TryGetString(root, "locationKey") 
+                           ?? TryGetString(root, "LocationKey")
+                           ?? TryGetString(root, "key")
+                           ?? TryGetString(root, "Key")
+                           ?? TryGetString(root, "id") 
+                           ?? string.Empty;
+
+            var rawLocationName = TryGetString(root, "location")
+                               ?? TryGetString(root, "Location")
+                               ?? TryGetString(root, "title")
+                               ?? TryGetString(root, "Title")
+                               ?? TryGetString(root, "name")
+                               ?? TryGetString(root, "Name");
+
             var locationName = ResolveLocationName(locationKey, rawLocationName);
             if (string.IsNullOrWhiteSpace(locationName))
             {
                 return false;
             }
 
+            double lat = 0;
+            if (root.TryGetProperty("latitude", out var latProp) || root.TryGetProperty("Latitude", out latProp))
+            {
+                if (latProp.ValueKind == JsonValueKind.Number) lat = latProp.GetDouble();
+                else if (latProp.ValueKind == JsonValueKind.String) double.TryParse(latProp.GetString(), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out lat);
+            }
+
+            double lng = 0;
+            if (root.TryGetProperty("longitude", out var lngProp) || root.TryGetProperty("Longitude", out lngProp))
+            {
+                if (lngProp.ValueKind == JsonValueKind.Number) lng = lngProp.GetDouble();
+                else if (lngProp.ValueKind == JsonValueKind.String) double.TryParse(lngProp.GetString(), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out lng);
+            }
+
             selection = new MapLocationSelectedEventArgs
             {
                 LocationKey = locationKey,
                 LocationName = locationName,
-                Latitude = root.GetProperty("latitude").GetDouble(),
-                Longitude = root.GetProperty("longitude").GetDouble()
+                Latitude = lat,
+                Longitude = lng
             };
 
             return true;

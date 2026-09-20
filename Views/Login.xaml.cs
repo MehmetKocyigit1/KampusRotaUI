@@ -9,7 +9,6 @@ namespace KampusRotaUI.Views;
 public partial class Login : ContentPage
 {
     private readonly ApiServices _apiService = new ApiServices();
-    private List<University> _allUniversities = new();
 
     public Login()
     {
@@ -18,11 +17,9 @@ public partial class Login : ContentPage
         RememberMeCheck.CheckedChanged += OnRememberMeChanged;
     }
 
-    protected override async void OnAppearing()
+    protected override void OnAppearing()
     {
         base.OnAppearing();
-
-        await LoadUniversitiesAsync();
 
         try
         {
@@ -47,92 +44,6 @@ public partial class Login : ContentPage
         catch (Exception ex)
         {
             Debug.WriteLine("Error loading saved credentials: " + ex.Message);
-        }
-    }
-
-    private async Task LoadUniversitiesAsync()
-    {
-        try
-        {
-            _allUniversities = await _apiService.GetUniversitiesAsync();
-            if (_allUniversities == null || _allUniversities.Count == 0)
-                return;
-
-            var cities = _allUniversities
-                .Select(u => u.City)
-                .Where(c => !string.IsNullOrWhiteSpace(c))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .OrderBy(c => c)
-                .ToList();
-
-            CityPicker.Items.Clear();
-            CityPicker.Items.Add("Tüm Şehirler");
-            foreach (var city in cities)
-            {
-                CityPicker.Items.Add(city);
-            }
-
-            var savedUniId = Preferences.Default.Get("UserUniversityId", 0);
-            var savedCity = Preferences.Default.Get("UserCity", string.Empty);
-
-            if (!string.IsNullOrEmpty(savedCity) && CityPicker.Items.Contains(savedCity))
-            {
-                CityPicker.SelectedItem = savedCity;
-            }
-            else
-            {
-                CityPicker.SelectedIndex = 0;
-            }
-
-            if (savedUniId > 0)
-            {
-                var savedUni = _allUniversities.FirstOrDefault(u => u.Id == savedUniId);
-                if (savedUni != null)
-                {
-                    UniversityPicker.SelectedItem = savedUni;
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"Login universities load error: {ex.Message}");
-        }
-    }
-
-    private void OnCitySelectedIndexChanged(object? sender, EventArgs e)
-    {
-        if (CityPicker.SelectedIndex < 0) return;
-
-        var selectedCity = CityPicker.SelectedItem?.ToString();
-        List<University> filtered;
-
-        if (string.IsNullOrEmpty(selectedCity) || selectedCity == "Tüm Şehirler")
-        {
-            filtered = _allUniversities;
-        }
-        else
-        {
-            filtered = _allUniversities
-                .Where(u => string.Equals(u.City, selectedCity, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-        }
-
-        UniversityPicker.ItemsSource = null;
-        UniversityPicker.ItemsSource = filtered;
-
-        if (filtered.Count > 0)
-        {
-            UniversityPicker.SelectedIndex = 0;
-        }
-    }
-
-    private void OnUniversitySelectedIndexChanged(object? sender, EventArgs e)
-    {
-        if (UniversityPicker.SelectedItem is University uni)
-        {
-            Preferences.Default.Set("UserUniversityId", uni.Id);
-            Preferences.Default.Set("UserUniversityName", uni.Name);
-            Preferences.Default.Set("UserCity", uni.City);
         }
     }
 
@@ -187,14 +98,7 @@ public partial class Login : ContentPage
             Preferences.Default.Set("UserProfilePhotoUrl", kullanici.ProfilFotografiUrl ?? string.Empty);
             Preferences.Default.Set("UserRating", kullanici.OrtalamaPuan.ToString("0.0", CultureInfo.InvariantCulture));
 
-            var selectedUni = UniversityPicker.SelectedItem as University;
-            if (selectedUni != null)
-            {
-                Preferences.Default.Set("UserUniversityId", selectedUni.Id);
-                Preferences.Default.Set("UserUniversityName", selectedUni.Name);
-                Preferences.Default.Set("UserCity", selectedUni.City);
-            }
-            else if (kullanici.UniversityId.HasValue)
+            if (kullanici.UniversityId.HasValue && kullanici.UniversityId.Value > 0)
             {
                 Preferences.Default.Set("UserUniversityId", kullanici.UniversityId.Value);
                 if (!string.IsNullOrEmpty(kullanici.UniversityName))
@@ -205,6 +109,34 @@ public partial class Login : ContentPage
                 {
                     Preferences.Default.Set("UserCity", kullanici.City);
                 }
+
+                if (string.IsNullOrEmpty(kullanici.UniversityName) || string.IsNullOrEmpty(kullanici.City))
+                {
+                    try
+                    {
+                        var uni = await _apiService.GetUniversityByIdAsync(kullanici.UniversityId.Value);
+                        if (uni != null)
+                        {
+                            Preferences.Default.Set("UserUniversityName", uni.Name);
+                            Preferences.Default.Set("UserCity", uni.City);
+                        }
+                    }
+                    catch { }
+                }
+            }
+            else
+            {
+                try
+                {
+                    var uni = await _apiService.GetUniversityByEmailAsync(userEmail);
+                    if (uni != null)
+                    {
+                        Preferences.Default.Set("UserUniversityId", uni.Id);
+                        Preferences.Default.Set("UserUniversityName", uni.Name);
+                        Preferences.Default.Set("UserCity", uni.City);
+                    }
+                }
+                catch { }
             }
 
             if (RememberMeCheck.IsChecked)

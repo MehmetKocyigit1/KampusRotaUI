@@ -71,6 +71,10 @@ public partial class AddRidePage : ContentPage
                     try
                     {
                         var raw = args.TryGetWebMessageAsString();
+                        if (string.IsNullOrEmpty(raw))
+                        {
+                            raw = args.WebMessageAsJson;
+                        }
                         if (!string.IsNullOrEmpty(raw))
                         {
                             _mapInterop.SelectLocation(raw);
@@ -332,7 +336,8 @@ public partial class AddRidePage : ContentPage
             var locations = await _apiService.GetCampusLocationsAsync(uni.Id);
             if (locations != null && locations.Count > 0)
             {
-                var json = JsonSerializer.Serialize(locations);
+                var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+                var json = JsonSerializer.Serialize(locations, options);
                 var escapedJson = JsonSerializer.Serialize(json);
                 await MapWebView.EvaluateJavaScriptAsync($"loadCampusPlaces({escapedJson});");
             }

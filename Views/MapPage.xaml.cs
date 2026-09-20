@@ -133,7 +133,8 @@ public partial class MapPage : ContentPage
             var locations = await _apiServices.GetCampusLocationsAsync(selectedUni.Id);
             if (locations != null && locations.Count > 0)
             {
-                var json = JsonSerializer.Serialize(locations);
+                var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+                var json = JsonSerializer.Serialize(locations, options);
                 var escapedJson = JsonSerializer.Serialize(json); // Escape for JavaScript argument
                 await MapWebView.EvaluateJavaScriptAsync($"loadCampusPlaces({escapedJson});");
             }
